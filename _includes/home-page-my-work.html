@@ -1,0 +1,16 @@
+<!-- My Work -->
+<section class="my-work" id="work">
+    <h2 class="section__title section__title--work">My work</h2>
+    <p class="section__subtitle section__subtitle--work">A selection of my range of work</p>
+
+    <div class="portfolio">
+
+      {% for project in site.projects %}
+
+      <a href="{{ project.url }}" class="portfolio__item">
+          <img src="{{ project.image_path }}" alt="{{ project.title }}" class="portfolio__img">
+        </a>
+      {% endfor %}
+
+    </div>
+</section>

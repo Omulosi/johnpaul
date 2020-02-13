@@ -1,0 +1,16 @@
+<div class="blog-post post-excerpt">
+  <article>
+    <header>
+      <h1 class="post-title">
+        <a href="{{post.url | relative_url }}">{{ post.title }}</a>
+      </h1>
+      <p class="post-date">
+        {{ post.date | date_to_long_string }}
+      </p>
+    </header>
+    <div class="post-content">
+      <p> {{ post.excerpt }}</p>
+      <a href="{{post.url | relative_url }}" class="read-more" id="btn">Read More</a>
+    </div>
+  </article>
+</div>
