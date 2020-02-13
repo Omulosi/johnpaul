@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python Decorators | John Paul</title><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Python Decorators | JP Mulongo’s blog</title>
+<meta name="generator" content="Jekyll v4.0.0" />
+<meta property="og:title" content="Python Decorators" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Before embarking on this cool topic of python decorators, let’s first talk about the concept of higher order functions." />
+<meta property="og:description" content="Before embarking on this cool topic of python decorators, let’s first talk about the concept of higher order functions." />
+<link rel="canonical" href="http://localhost:4000/python/programming/2018/11/10/python-decorators.html" />
+<meta property="og:url" content="http://localhost:4000/python/programming/2018/11/10/python-decorators.html" />
+<meta property="og:site_name" content="JP Mulongo’s blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2018-11-10T00:00:00+03:00" />
+<script type="application/ld+json">
+{"description":"Before embarking on this cool topic of python decorators, let’s first talk about the concept of higher order functions.","headline":"Python Decorators","dateModified":"2018-11-10T00:00:00+03:00","datePublished":"2018-11-10T00:00:00+03:00","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/python/programming/2018/11/10/python-decorators.html"},"url":"http://localhost:4000/python/programming/2018/11/10/python-decorators.html","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="JP Mulongo's blog" /><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/7.0.0/normalize.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.css" integrity="sha256-46qynGAkLSFpVbEBog43gvNhfrOj+BmwXdxFgVK/Kvc=" crossorigin="anonymous" />
+
+    <link href="https://fonts.googleapis.com/css?family=Lora:400,700|Roboto+Slab:400,700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href=/assets/css/styles.css>
+
+</head>
+
+<body>
+
+  <section class="main-page">
+    <div class="sidebar">
+    <h1 class="blog-title">
+      <a href=/ title="John Paul Mulongo" rel="home">John Paul</a>
+    </h1>
+
+    <ul class="main-menu">
+      <li class="menu-item nav__link"><a href=/>Home</a></li>
+      <li class="menu-item nav__link"><a href=/blog>Blog</a></li>
+      <li class="menu-item nav__link"><a href=/#footer>Contact</a></li>
+      <li class="menu-item nav__link"><a href=/#work>Projects</a></li>
+      <li class="menu-item nav__link"><a href=/now>Now</a></li>
+    </ul>
+
+    <ul class="sidebar-social">
+        <li class="social__item">
+            <a class="social__link" href="https://twitter.com/jp_mulongo" target="_blank">
+                <i class="fab fa-twitter"></i>
+            </a>
+        </li>
+        <li class="social__item">
+            <a class="social__link" href="https://github.com/Omulosi" target="_blank">
+                <i class="fab fa-github"></i>
+            </a>
+        </li>
+    </ul>
+
+</div>
+
+
+    <div class="main-content">
+
+
+    <header class="header-nav">
+    <button class="sidebar-toggle" aria-label="toggle navigation">
+        <span class="hamburger"></span>
+    </button>
+</header>
+
+    <div class="blog-index">
+  <a href=/blog>Blog</a>
+</div>
+<div class="blog-post">
+  <article >
+    <header>
+      <h1 class="post-title">Python Decorators</h1>
+      <time class="post-date">
+        10 November 2018
+      </time>
+    </header>
+    <div class="post-content">
+  	    <p>Before embarking on this cool topic of <strong>python decorators</strong>, let’s first talk
+about the concept of <strong>higher order functions</strong>.</p>
+
+<p>In python, functions are treated as <strong>first class objects</strong>. This simply means
+that they can be passed in as parameters, they can act as return values in other
+functions, they can be defined inside other functions, they can even be assigned
+to variables besides their traditional role as a means of abstraction.</p>
+
+<p>Higher order functions are functions that manipulate other functions. They
+accept other functions as arguments, can have other functions defined in their
+local environments and can also return other functions. Treating functions as
+first class objects is what makes all this possible. Let’s look at some
+examples to make all this concrete.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># passing functions as arguments
+</span><span class="k">def</span> <span class="nf">doTwice</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+  <span class="s">"""
+  Takes a function f and applies it twice.
+  &gt;&gt;&gt; doTwice(square, 2)
+  16
+  """</span>
+  <span class="k">return</span> <span class="n">f</span><span class="p">(</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+
+<span class="c1"># Returning functions as values
+</span><span class="k">def</span> <span class="nf">doTwiceMaker</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+  <span class="s">"""
+  A function that returns a function
+
+  &gt;&gt;&gt; twosquare = doTwiceMaker(square)
+  &gt;&gt;&gt; twosquare(2)
+  &gt;&gt;&gt; 16
+
+  same as below
+  &gt;&gt;&gt; doTwiceMaker(square)(2)
+  &gt;&gt;&gt; 16
+  """</span>
+  <span class="k">return</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">f</span><span class="p">(</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+
+ <span class="c1"># Nested definitions of functions
+</span> <span class="k">def</span> <span class="nf">doTwiceMaker</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+   <span class="s">"""
+   Function defined inside another function.
+   """</span>
+   <span class="k">def</span> <span class="nf">twoF</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+     <span class="k">return</span> <span class="n">f</span><span class="p">(</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+   <span class="k">return</span> <span class="n">twoF</span>
+</code></pre></div></div>
+<p>We can see from the examples demonstrated above that functions can be passed
+in as parameters, returned as values or defined inside other functions.</p>
+
+<p>Let’s examine the third example which has a nested function definition in a
+little more detail. Here, the local <code class="highlighter-rouge">def</code> statement only affects the current
+local scope of the function in question (doTwiceMaker). The <code class="highlighter-rouge">twoF</code> function
+will only be in scope while <code class="highlighter-rouge">doTwiceMaker</code> is being evaluated.</p>
+
+<p>The locally defined <code class="highlighter-rouge">twoF</code> function also has access to the <strong>name bindings</strong>
+in the scope in which it is defined (i.e. the <code class="highlighter-rouge">doTwiceMaker</code> function). Hence,
+the variable <code class="highlighter-rouge">f</code> referenced in its body refers to the name <code class="highlighter-rouge">f</code> which is a
+formal parameter of the <code class="highlighter-rouge">doTwiceMaker</code> function, its parent. In general,
+nested function definitions have access to names that are defined in their
+parent functions, including their formal parameters 
+( the vice-versa scenario doesn’t apply though).
+This discipline of sharing names among nested definitions is called <strong>lexical
+scoping</strong>.</p>
+
+<p><strong>Inner functions will always have access to the names in the
+environment where they are defined, not where they are called</strong>. You should
+always remember this.</p>
+
+<p>Now that we have covered most of what you will need to understand
+<strong>decorators</strong>, jump right in.</p>
+
+<h3 id="python-decorators">Python Decorators</h3>
+<p>Simply put, a python decorator is a function that takes another function as
+a parameter and adds extra functionality to it. In a way, it is a type 
+of higher order function. This function is basically used to “wrap” other
+functions. It takes in a <strong>function as input</strong> and returns a <strong>new function</strong> that
+pre-processes the inputs or post-processes the outputs of the original
+function.</p>
+
+<p>Say you have a stand alone function that need not be modified. To
+extend its functionality, just pass it to the decorator. The decorator 
+will then return a new function in place of the original one
+with the desired functionality added.</p>
+
+<p>For example, suppose you want to print the type of the output that a function
+returns. We can define a decorator that adds this functionality.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">typePrinter</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+  <span class="s">""" A decorator for printing the type of output a function returns."""</span>
+  <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>      <span class="c1"># calls the original decorated function
+</span>    <span class="k">print</span><span class="p">(</span><span class="s">"Output type:"</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">output</span><span class="p">))</span> <span class="c1"># process before finishing
+</span>    <span class="k">return</span> <span class="n">output</span>                       <span class="c1"># Return function output
+</span>  <span class="k">return</span> <span class="n">wrapper</span>
+</code></pre></div></div>
+<p>The outer function, <code class="highlighter-rouge">typePrinter</code> returns a new function <code class="highlighter-rouge">wrapper</code>. Since
+wrapper accepts *args and **kwargs as arguments, the input function <code class="highlighter-rouge">func</code>
+could accept any number of positional or key-word arguments.</p>
+
+<p>Let us now apply our decorator to a function.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">mul</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+  <span class="k">return</span> <span class="n">a</span> <span class="o">*</span> <span class="n">b</span>
+
+<span class="c1"># Apply the decorator to mul function
+</span><span class="n">mul</span> <span class="o">=</span> <span class="n">typePrinter</span><span class="p">(</span><span class="n">mul</span><span class="p">)</span>
+</code></pre></div></div>
+<p>We have defined a function <code class="highlighter-rouge">mul</code> that returns the product of two inputs.
+Thereafter, we have called the <code class="highlighter-rouge">typePrinter</code> decorator, passing in <code class="highlighter-rouge">mul</code> as a
+paramter. The return value of this decorator call is again assigned to a
+variable called mul. Note that this particular <strong>mul</strong> does not reference the
+original function. It points to the new function returned by the decorator.
+The new function is basically the wrapper that was defined in the decorator,
+with its <strong>func</strong> value pointing to the original <strong>mul</strong> that was passed to
+the decorator call.</p>
+
+<p>Now calling <code class="highlighter-rouge">mul</code> actually calls <code class="highlighter-rouge">wrapper</code>, which then calls the original
+<code class="highlighter-rouge">mul</code>.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">&gt;&gt;&gt;</span> <span class="n">mul</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="n">Output</span> <span class="nb">type</span><span class="p">:</span> <span class="o">&lt;</span><span class="k">class</span> <span class="err">'</span><span class="nc">int</span><span class="s">'&gt;</span><span class="err">
+</span><span class="s">12</span><span class="err">
+</span><span class="s">&gt;&gt;&gt; mul(3.0, 4.0)</span><span class="err">
+</span><span class="s">Output type: &lt;class '</span><span class="nb">float</span><span class="s">'&gt;</span><span class="err">
+</span><span class="s">12.0</span><span class="err">
+</span></code></pre></div></div>
+<p>The decorator pattern is so common that it has a special syntax. To apply a
+decorator to a function, we can simply tag the function’s definition with an
+<strong>@</strong> symbol and the decorator name. The previous code can then be expressed more
+succintly as shown below.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">#
+# Apply the decorator. This is similar to:
+# mul = typePrinter(mul)
+#
+</span><span class="o">@</span><span class="n">typePrinter</span>
+<span class="k">def</span> <span class="nf">mul</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+  <span class="k">return</span> <span class="n">a</span> <span class="o">*</span> <span class="n">b</span>
+
+</code></pre></div></div>
+
+<p>Let’s look at another example. This time, we are going to use a decorator to
+print how long it takes a given function to run.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">time</span>
+
+<span class="k">def</span> <span class="nf">timer</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+  <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">'Time to run: '</span><span class="o">.</span><span class="nb">format</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">result</span>
+  <span class="k">return</span> <span class="n">wrapper</span>
+
+<span class="c1"># Usage
+</span><span class="o">@</span><span class="n">timer</span>
+<span class="k">def</span> <span class="nf">double</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+  <span class="k">return</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">x</span>
+
+<span class="c1"># Results
+</span><span class="o">&gt;&gt;&gt;</span> <span class="n">double</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">Time</span> <span class="n">to</span> <span class="n">run</span><span class="p">:</span> <span class="mf">3.814697265625e-06</span>
+<span class="mi">4</span>
+
+</code></pre></div></div>
+
+<p>This decorator creates a function called wrapper that adds new functionality to
+the original function without modifying it.</p>
+
+<p>In summary, a decorator is just a normal function. It takes a function as a
+parameter and when called, it returns a different function with some added
+functionality.</p>
+
+  	</div>
+    <div class="post-footer">
+        <div class="page-navigation">
+            
+                <a class="prev" href="/python/programming/projects/2018/10/10/restaurant-app-flask.html">&laquo; Restaurant Web Application with Flask</a>
+            
+            
+                <a class="next" href="/python/programming/2018/11/17/managing-python-versions-pyenv.html">Managing multiple python versions with pyenv &raquo;</a>
+            
+        </div>
+    </div>
+  </article>
+</div>
+
+    </div>
+  </section>
+
+  <script src="/assets/js/index.js"></script>
+</body>
+</html>

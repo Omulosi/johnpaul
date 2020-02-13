@@ -1,0 +1,5 @@
+I"E<p>React hooks are a new addition to the React library. They provide a way to add
+functionality to react components that previously would only be possible if one
+used classes. For example, adding state. You had to use classes in these cases.
+Function components could only be pure components as a result. Not so anymore.</p>
+:ET

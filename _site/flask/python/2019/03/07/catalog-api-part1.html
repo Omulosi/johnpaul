@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Building Web APIs with Flask - Part 1 | John Paul</title><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Building Web APIs with Flask - Part 1 | JP Mulongo’s blog</title>
+<meta name="generator" content="Jekyll v4.0.0" />
+<meta property="og:title" content="Building Web APIs with Flask - Part 1" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="In this project we are going to design a RESTFul API for a Catalog Application. This will be a simple application that provides a list of items within a variety of categories." />
+<meta property="og:description" content="In this project we are going to design a RESTFul API for a Catalog Application. This will be a simple application that provides a list of items within a variety of categories." />
+<link rel="canonical" href="http://localhost:4000/flask/python/2019/03/07/catalog-api-part1.html" />
+<meta property="og:url" content="http://localhost:4000/flask/python/2019/03/07/catalog-api-part1.html" />
+<meta property="og:site_name" content="JP Mulongo’s blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2019-03-07T09:15:36+03:00" />
+<script type="application/ld+json">
+{"description":"In this project we are going to design a RESTFul API for a Catalog Application. This will be a simple application that provides a list of items within a variety of categories.","headline":"Building Web APIs with Flask - Part 1","dateModified":"2019-03-07T09:15:36+03:00","datePublished":"2019-03-07T09:15:36+03:00","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/flask/python/2019/03/07/catalog-api-part1.html"},"url":"http://localhost:4000/flask/python/2019/03/07/catalog-api-part1.html","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="JP Mulongo's blog" /><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/7.0.0/normalize.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.css" integrity="sha256-46qynGAkLSFpVbEBog43gvNhfrOj+BmwXdxFgVK/Kvc=" crossorigin="anonymous" />
+
+    <link href="https://fonts.googleapis.com/css?family=Lora:400,700|Roboto+Slab:400,700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href=/assets/css/styles.css>
+
+</head>
+
+<body>
+
+  <section class="main-page">
+    <div class="sidebar">
+    <h1 class="blog-title">
+      <a href=/ title="John Paul Mulongo" rel="home">John Paul</a>
+    </h1>
+
+    <ul class="main-menu">
+      <li class="menu-item nav__link"><a href=/>Home</a></li>
+      <li class="menu-item nav__link"><a href=/blog>Blog</a></li>
+      <li class="menu-item nav__link"><a href=/#footer>Contact</a></li>
+      <li class="menu-item nav__link"><a href=/#work>Projects</a></li>
+      <li class="menu-item nav__link"><a href=/now>Now</a></li>
+    </ul>
+
+    <ul class="sidebar-social">
+        <li class="social__item">
+            <a class="social__link" href="https://twitter.com/jp_mulongo" target="_blank">
+                <i class="fab fa-twitter"></i>
+            </a>
+        </li>
+        <li class="social__item">
+            <a class="social__link" href="https://github.com/Omulosi" target="_blank">
+                <i class="fab fa-github"></i>
+            </a>
+        </li>
+    </ul>
+
+</div>
+
+
+    <div class="main-content">
+
+
+    <header class="header-nav">
+    <button class="sidebar-toggle" aria-label="toggle navigation">
+        <span class="hamburger"></span>
+    </button>
+</header>
+
+    <div class="blog-index">
+  <a href=/blog>Blog</a>
+</div>
+<div class="blog-post">
+  <article >
+    <header>
+      <h1 class="post-title">Building Web APIs with Flask - Part 1</h1>
+      <time class="post-date">
+        07 March 2019
+      </time>
+    </header>
+    <div class="post-content">
+  	    <p>In this project we are going to design a RESTFul API for a <em>Catalog
+Application</em>. This will be a simple application that provides a list of items
+within a variety of categories.</p>
+
+<h2 id="key-features-of-the-application">Key features of the application</h2>
+<ul>
+  <li>users can create an item</li>
+  <li>Users can edit an item</li>
+  <li>Users can delete an item</li>
+  <li>Users can view a list of all items</li>
+  <li>Users can view a list of items from a partcular category</li>
+</ul>
+
+<p>APIs are basically a convenient way for clients to consume data. They should be
+well designed so that other developers can easily use them without too much
+hassle or wasting countless hours just trying to decipher them.</p>
+
+<p>Some of the key terms related to API design include resources, collections and
+URLs. I will briefly describe these below.</p>
+
+<ul>
+  <li><strong>Resource</strong> - an object. A representation of something. It can be <em>created</em>
+          <em>updated</em> or <em>deleted</em>.</li>
+  <li><strong>Collections</strong> - a set of resources</li>
+  <li><strong>URL</strong> - a Uniform Resource Locator. A path used to locate a resource and
+  perform some actions on it.</li>
+</ul>
+
+<h2 id="getting-started">Getting Started</h2>
+<p>This project will use the <a href="http://flask.pocoo.org/docs/1.0/">Flask</a> framework to build the API. The
+flask framework is easy to use and there are ample resources online to get up
+to speed. If you are not familiar with it, the <a href="http://flask.pocoo.org/docs/1.0/tutorial/">flask tutorial</a>
+provides an excellent introduction. You should be fairly good in python with a thorough
+grounding in the fundamental concepts like functions, classes and decorators
+to follow along.</p>
+
+<p>I am also going to touch on how to use version control to keep track of
+changes, some aspects of test-driven development and continuous integration.</p>
+
+<p>To set up our project, create a github repository called <strong>catalog</strong>(or
+whatever name you want) and clone it to whatever directory you find
+convenient.</p>
+
+<p>Then create a virtual environment called <code class="highlighter-rouge">venv</code> and activate it
+(This assumes you already have <code class="highlighter-rouge">python</code> installed on your system).</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ python3 -m venv venv
+$ source venv/bin/activate
+</code></pre></div></div>
+
+<p>Install the flask package.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ pip install flask
+$ pip freeze &gt; requirements.txt
+</code></pre></div></div>
+<p>We will use branching to build our application. Create a branch called
+<code class="highlighter-rouge">develop</code> and move to it.</p>
+
+<p><code class="highlighter-rouge">$ git checkout -b develop</code></p>
+
+<p>Set the directory structure. The structure should be similar to the example
+displayed below.</p>
+
+<p><img src="/assets/img/folder_tree1.png" alt="directory structure" /></p>
+
+<p>The <strong>app</strong> package will contain the main application. The <strong>tests</strong> package
+will contain our tests. Within the app package, is an <strong>api</strong> package with
+subpackages for different versions of our api. These packages will contain the
+main code for our API.</p>
+
+<p>Add and commit your changes to the repository.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(venv)$ git add -A
+(venv)$ git commit -m "Initial directory structure"
+</code></pre></div></div>
+
+<p>Lets begin by first coming up with a model to represent the data that our
+application will be built out of.</p>
+
+<h2 id="data-model-and-database">Data Model and Database</h2>
+<p>The next step will involve coming up with an appropriate model to represent
+the data in our application. This application will have two tables: a
+<strong>Users</strong> table and an <strong>Items</strong> table. A user can create many items. Each
+item will fall within a particular category.</p>
+
+<p>These are some of the key fields associated with the users table:</p>
+<ul>
+  <li>username</li>
+  <li>email</li>
+  <li>password_hash</li>
+  <li>firstname</li>
+  <li>lastname</li>
+  <li>createdon</li>
+</ul>
+
+<p>Similarly, the items table will have the following fields:</p>
+<ul>
+  <li>item-name</li>
+  <li>description</li>
+  <li>createdon</li>
+  <li>image</li>
+  <li>category</li>
+  <li>user_id (to point to the user who created it)</li>
+</ul>
+
+<p>We will begin with the fields listed above as a start.</p>
+
+<p>Before, we continue, let’s discuss how to incorporate databases in flask.</p>
+
+<p>Flask does not support databases natively. But extensions are available which
+provide better integration with an application. In this project, we will use
+the Flask-SQLAlchemy extension. This extension provides a flask-friendly
+wrapper to the popular
+<a href="https://docs.sqlalchemy.org/en/latest/index.html">SQLAlchemy</a> package.</p>
+
+<p>Let’s create a new feature branch from where we will set up our database models.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(venv)$ git checkout -b ft-database-models
+</code></pre></div></div>
+
+<p>To install Flask-SQLAlchemy, run the command below. (Ensure your virtual
+environment is activated).</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(venv)$ pip install flask-sqlalchemy
+</code></pre></div></div>
+
+<p>We will also install the
+<a href="https://github.com/miguelgrinberg/flask-migrate">Flask-Migrate</a> extension.
+This extension is a wrapper for
+<a href="https://bitbucket.org/zzzeek/alembic">Alembic</a>, a database migration
+framework for SQLAlchemy.</p>
+
+<p>Database migrations refer to the process of updating the structure of a
+relational database with all data contained therein when that structure is modified.
+This process is a pain when done manually. Flask-Migrate streamlines everything
+and provides a robust way to make future changes to your database.</p>
+
+<p>To install Flask-mIgrate, run:</p>
+
+<p><code class="highlighter-rouge">(venv)$ pip install flask-migrate</code></p>
+
+<p>We also need to install <a href="http://initd.org/psycopg/docs/">psycopg2</a>, a database
+connector for PostgreSQL, to connect to the database.</p>
+
+<p><code class="highlighter-rouge">(venv)$ pip install pscyopg2-binary</code></p>
+
+<p>Next, we will configure Flask-SQLAlchemy. We will use the <a href="">Postgresql</a>
+database. This post assumes you already have Postgresql installed in your
+computer. Check
+<a href="https://www.fullstackpython.com/blog/postgresql-python-3-psycopg2-ubuntu-1604.html" target="_blank">this article</a>
+on how to install Postgresql in Linux systems(For those using a Linux
+environment). Follow the instructions
+on how to create a new user and a database in the PostgreSQL server before
+continuing.</p>
+
+<p>Before adding configuration variables for the database, install the
+<a href="https://pypi.org/project/python-dotenv/" target="_blank">python-dotenv</a>
+package. This package is used to read configuration values
+from a <code class="highlighter-rouge">.env</code> file and add them to the environment. Thereafter, we can use the
+<code class="highlighter-rouge">os</code> module to read these values into our application.</p>
+
+<p><code class="highlighter-rouge">(venv)$ pip install python-dotenv</code></p>
+
+<p>Let’s make all this concrete.</p>
+
+<p>In the <code class="highlighter-rouge">config.py</code> file, add the code below.</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+</pre></td><td class="code"><pre><span class="c1"># config.py
+</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">dotenv</span> <span class="kn">import</span> <span class="n">load_dotenv</span>
+
+<span class="n">basedir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">__file__</span><span class="p">))</span>
+<span class="n">load_dotenv</span><span class="p">(</span><span class="n">dotenv_path</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">basedir</span><span class="p">,</span> <span class="s">'.env'</span><span class="p">))</span>
+
+<span class="k">class</span> <span class="nc">Config</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="n">SQLALCHEMY_DATABASE_URI</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s">'DATABASE_URL'</span><span class="p">)</span>
+    <span class="n">SQLALCHEMY_TRACK_MODIFICATIONS</span> <span class="o">=</span> <span class="bp">False</span>
+</pre></td></tr></tbody></table></code></pre></figure>
+
+<p>Here, we first import the <code class="highlighter-rouge">os</code> module and create an absolute path to the
+directory where this file is located. We then load the configuration values to
+the environment using the <code class="highlighter-rouge">load_dotenv</code> function.</p>
+
+<p>The <code class="highlighter-rouge">config</code> module is used to hold our configuration values. It is structured
+using classes with class attributes as configuration variables.</p>
+
+<p>Flask-SQLAlchemy takes the location of the application’s database from the
+<code class="highlighter-rouge">SQLALCHEMY_DATABASE_URI</code> configuration variable. In turn, the value for the
+database url is obtained from the environment variable named <code class="highlighter-rouge">DATABASE_URL</code>.</p>
+
+<p><strong>Database Urls</strong> for connecting to a database using SQLAlchemy have the
+format <code class="highlighter-rouge">dialect+driver://username:password@host:port/database</code>.</p>
+
+<p>Create a <code class="highlighter-rouge">.env</code> file at the topmost directory in your folder structure
+and add the following line.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>DATABASE_URL=postgresql+psycopg2://paul:catalog12@localhost:5432/catalog
+</code></pre></div></div>
+
+<p>The database we will be using is named <strong>catalog</strong>.</p>
+
+<p>The <code class="highlighter-rouge">SQLALCHEMY_TRACK_MODIFICATIONS</code> configuration option is set to <code class="highlighter-rouge">False</code> so
+as not to signal the application everytime a change is made to the database.</p>
+
+<p>To setup the database, add the following code to the <code class="highlighter-rouge">app/__init__.py</code> file:</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+</pre></td><td class="code"><pre><span class="c1"># app\__init__.py
+</span>
+<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span>
+<span class="kn">from</span> <span class="nn">config</span> <span class="kn">import</span> <span class="n">Config</span>
+<span class="kn">from</span> <span class="nn">flask_sqlalchemy</span> <span class="kn">import</span> <span class="n">SQLAlchemy</span>
+<span class="kn">from</span> <span class="nn">flask_migrate</span> <span class="kn">import</span> <span class="n">Migrate</span>
+
+<span class="n">db</span> <span class="o">=</span> <span class="n">SQLAlchemy</span><span class="p">()</span>
+<span class="n">migrate</span> <span class="o">=</span> <span class="n">Migrate</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">create_app</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">Config</span><span class="p">):</span>
+    <span class="s">"""Creates the application instance"""</span>
+
+    <span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">from_object</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+
+    <span class="n">db</span><span class="o">.</span><span class="n">init_app</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+    <span class="n">migrate</span><span class="o">.</span><span class="n">init_app</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">db</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">app</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">models</span>
+</pre></td></tr></tbody></table></code></pre></figure>
+
+<p>This script uses the application factory pattern to create the flask app.</p>
+
+<p>First we do all the necessary imports. Here, we have imported the <code class="highlighter-rouge">Flask</code>,
+<code class="highlighter-rouge">SQLAlchemy</code>, <code class="highlighter-rouge">Migrate</code> and <code class="highlighter-rouge">Config</code> classes. Then we have initialized a
+database instance, <code class="highlighter-rouge">db</code>, using SQLAlchemy object, and a Flask-Migrate
+instance, <code class="highlighter-rouge">migrate</code>, using the Flask-Migrate object.</p>
+
+<p>A Flask application is an instance of the <code class="highlighter-rouge">Flask</code> class. Everything about the
+application, such as configuration and URLs will be registered with this
+class.</p>
+
+<p>The Flask instance is created in the <code class="highlighter-rouge">create_app</code> function. This function is
+called an <em>application factory</em> function. It returns an instance of a Flask
+application. Any configuration, registration, and other setup the application
+needs happens inside this function.The <code class="highlighter-rouge">app.config.from_object</code> line loads 
+configuration values that the app will use from the <code class="highlighter-rouge">Config</code> object.</p>
+
+<p>Finally, we import a <code class="highlighter-rouge">models</code> module using a relative import. The last line basically says
+import a models module from the current package(denoted by a <code class="highlighter-rouge">.</code>(period)).
+This module will define the structure of the database.</p>
+
+<h3 id="database-models">Database Models</h3>
+<p>We will represent the data that will be stored in the database using
+<em>classes</em>. Each class will represent a table and the associated class
+attributes will represent the columns. The <strong>ORM</strong> layer within SQLAlchemy will
+then map these classes to the appropriate database tables.</p>
+
+<p>Create a <code class="highlighter-rouge">models.py</code> file in the <code class="highlighter-rouge">app</code> package and add the following code.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app.models
+</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">db</span>
+
+<span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">username</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="mi">64</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">unique</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">email</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="mi">120</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">unique</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">password_hash</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="mi">140</span><span class="p">))</span>
+    <span class="n">firstname</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="mi">64</span><span class="p">))</span>
+    <span class="n">lastname</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="mi">64</span><span class="p">))</span>
+    <span class="n">createdon</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">DateTime</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">)</span>
+    <span class="n">items</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">relationship</span><span class="p">(</span><span class="s">'Item'</span><span class="p">,</span> <span class="n">backref</span><span class="o">=</span><span class="s">'createdby'</span><span class="p">,</span> <span class="n">lazy</span><span class="o">=</span><span class="s">'dynamic'</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">'&lt;User {}&gt;'</span><span class="o">.</span><span class="n">formar</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">username</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">Item</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">itemname</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="mi">64</span><span class="p">))</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="mi">300</span><span class="p">))</span>
+    <span class="n">category</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="mi">64</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">createdon</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">DateTime</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">)</span>
+    <span class="n">user_id</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Integer</span><span class="p">,</span> <span class="n">db</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s">'user.id'</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">'&lt;Item {}&gt;'</span><span class="o">.</span><span class="n">formar</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">itemname</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>The <code class="highlighter-rouge">User</code> class subclasses <code class="highlighter-rouge">db.Model</code>, a base class inherited by all
+SQLAlchmey data models. The class defines several fields which are instances
+of the <code class="highlighter-rouge">db.Column</code> class, which takes a field type plus extra optional
+arguments. The <code class="highlighter-rouge">__repr__</code> method is a special method that defines how this
+class will be diplayed when it’s printed. Some fields are indexed which
+ensures that searching/sorting using these fields will be much faster.</p>
+
+<p>The <code class="highlighter-rouge">items</code> field, initialized using <code class="highlighter-rouge">db.relationship</code>, is a virtual field
+that is used to conveniently obtain all the items created by a user. This is
+accomplished by running a command that follows the format <code class="highlighter-rouge">user.items</code>. The
+<code class="highlighter-rouge">backref</code> argument creates a virtual field in the <code class="highlighter-rouge">Item</code> table called
+<code class="highlighter-rouge">createdby</code>. This field is used to get the user who created the item. 
+This can be accomplished using a command such as <code class="highlighter-rouge">item.createdby</code>.</p>
+
+<p>The <code class="highlighter-rouge">Item</code> class represents items created by a user. In the createdon field,
+the default option is given a datetime function that is automatically called
+whenever a new record is created in the table represented by this class. The
+<code class="highlighter-rouge">user_id</code> field defines a foreign key relationship, i.e, it references the
+<code class="highlighter-rouge">id</code> of the user who created the item in question.</p>
+
+<h4 id="database-migration">Database Migration</h4>
+<p>With the initial database structure setup, we are now going to perform
+database migration operations using Alembic. The <strong>Flask-Migrate</strong> extension
+we installed earlier provides convenient commands for this. These commands are
+exposed through the <code class="highlighter-rouge">flaski db</code> command.</p>
+
+<p>Before proceeding, we need to create a database in our Postgreql server.
+Follow <a href="https://www.digitalocean.com/community/tutorials/how-to-install-and-use-postgresql-on-ubuntu-16-04#top">this
+article</a>
+to create one.</p>
+
+<p>Run the following commands to apply the changes to the database.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$(venv) flask db init
+$(venv) flask db migrate
+$(venv) flask db 
+</code></pre></div></div>
+
+<p>The first command creates a migration repository and the second command
+populates the migration scripts previously created with the changes to be
+applied. In both cases, the database remains unchanged. The last command is
+the one that applies the changes.</p>
+
+<p>Henceforth, whenever you make changes to your models, generate a new
+migration script using <code class="highlighter-rouge">flask db migrate</code> then apply the changes to the
+database with <code class="highlighter-rouge">flask db upgrade</code>.</p>
+
+<p>Use <code class="highlighter-rouge">flask db downgrade</code> to undo the previous migration.</p>
+
+<h4 id="password-hashing">Password Hashing</h4>
+<p>It’s generally a bad idea to store plain text passwords in your database because of
+the security risk involved. Instead, we usually store password hashes.
+<a href="http://dustwell.com/how-to-handle-passwords-bcrypt.html">This blog post</a>
+offers an excellent explanation for this.</p>
+
+<p>To hash users’ passwords, we will use the
+<a href="https://flask-bcrypt.readthedocs.io/en/latest/">Flask-Bcrypt</a> extension.</p>
+
+<p><code class="highlighter-rouge">(venv)$ pip install flask-bcrypt</code></p>
+
+<p>Add the following code to your <code class="highlighter-rouge">app/__init__.py</code> file.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app\__init__.py
+</span><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span>
+<span class="kn">from</span> <span class="nn">config</span> <span class="kn">import</span> <span class="n">Config</span>
+<span class="kn">from</span> <span class="nn">flask_sqlalchemy</span> <span class="kn">import</span> <span class="n">SQLAlchemy</span>
+<span class="kn">from</span> <span class="nn">flask_migrate</span> <span class="kn">import</span> <span class="n">Migrate</span>
+<span class="kn">from</span> <span class="nn">flask_bcrypt</span> <span class="kn">import</span> <span class="n">Bcrypt</span> <span class="c1"># &lt;-- new line
+</span>
+<span class="n">db</span> <span class="o">=</span> <span class="n">SQLAlchemy</span><span class="p">()</span>
+<span class="n">migrate</span> <span class="o">=</span> <span class="n">Migrate</span><span class="p">()</span>
+<span class="n">bcrypt</span> <span class="o">=</span> <span class="n">Bcrypt</span><span class="p">()</span> <span class="c1"># &lt;-- new line
+</span>
+<span class="k">def</span> <span class="nf">create_app</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">Config</span><span class="p">):</span>
+    <span class="s">"""Creates the application instance"""</span>
+
+    <span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">from_object</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+
+    <span class="n">db</span><span class="o">.</span><span class="n">init_app</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+    <span class="n">migrate</span><span class="o">.</span><span class="n">init_app</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">db</span><span class="p">)</span>
+    <span class="n">bcrypt</span><span class="o">.</span><span class="n">init_app</span><span class="p">(</span><span class="n">app</span><span class="p">)</span> <span class="c1"># &lt;-- new line
+</span>
+    <span class="k">return</span> <span class="n">app</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">models</span>
+
+</code></pre></div></div>
+
+<p>Update the <code class="highlighter-rouge">models.py</code> module as follows.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="c1"># ... previous code
+</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">bcrypt</span>
+
+<span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="c1"># ... previous code
+</span>
+    <span class="k">def</span> <span class="nf">set_password</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">password</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">password_hash</span> <span class="o">=</span> <span class="n">bcrypt</span><span class="o">.</span><span class="n">generate_password_hash</span><span class="p">(</span><span class="n">password</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">check_password</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">password</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">bcrypt</span><span class="o">.</span><span class="n">check_password_hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">password_hash</span><span class="p">,</span> <span class="n">password</span><span class="p">)</span>
+
+<span class="c1"># ... previous code
+</span>
+</code></pre></div></div>
+
+<p>Here, we have added two methods to the <code class="highlighter-rouge">models</code> module. The <code class="highlighter-rouge">set_password</code>
+module uses bcrypt to generate a new password hash while the <code class="highlighter-rouge">check_password</code>
+method uses bcrypt to check the validity of a password. If password is valid,
+it returns <code class="highlighter-rouge">True</code> else <code class="highlighter-rouge">False</code>.</p>
+
+<p>Finally, apply the changes to the database.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(venv)$ flask db migrate -m "password hashing in user model"
+(venv)$ flask db upgrade
+</code></pre></div></div>
+
+<h4 id="testing-our-database-implementation">Testing our database implementation</h4>
+
+<p>We are now going to test our database implemenation so far in the python
+interpreter to see how everything works.</p>
+
+<p>From your top-level directory (the folder containing <code class="highlighter-rouge">venv</code>), fire up the
+python interpreter.</p>
+
+<p>Import the database models, db instance and create_app function.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&gt;&gt;&gt; from app.models import User, Item
+&gt;&gt;&gt; from app import db, create_app
+</code></pre></div></div>
+<p>Before proceeding, note that we cannot execute the database commands just yet.
+SQLAlchemy has to first be bound to an application instance. Since the db
+instance imported here was defined globally, there’s no way of telling
+SQLAlchemy which application to use. To resolve, we are to create and push an
+application context.</p>
+
+<p>An application context allows us to work within a given application. This
+happens automatically in view functions. However, we have to manually create
+one when we are in the interactive shell.</p>
+
+<p>To learn more about application contexts, checkout this
+<a href="http://flask-sqlalchemy.pocoo.org/2.3/contexts/">article</a>.</p>
+
+<p>To create the application context, run the following commands.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&gt;&gt;&gt; app = create_app()
+&gt;&gt;&gt; app.app_context().push()
+</code></pre></div></div>
+
+<p>We are now ready to run the database commands.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&gt;&gt;&gt; u1 = User(username='john', email='john@example')
+&gt;&gt;&gt; u1.set_password('john')
+&gt;&gt;&gt; u2 = User(username='jane', email='jane@example')
+&gt;&gt;&gt; u2.set_password('jane')
+&gt;&gt;&gt; db.session.add(u1)
+&gt;&gt;&gt; db.session.add(u2)
+&gt;&gt;&gt; db.session.commit()
+&gt;&gt;&gt; users = User.query.all()
+&gt;&gt;&gt; users
+[&lt;User john&gt;, &lt;User jane&gt;]
+&gt;&gt;&gt; j = users[0]
+&gt;&gt;&gt; j.check_password('john')
+True
+&gt;&gt;&gt; j.check_password('alex')
+False
+&gt;&gt;&gt; it = Item(itemname='ball', description='football', category='soccer',
+createdby=j)
+&gt;&gt;&gt; db.session.add(it)
+&gt;&gt;&gt; db.session.commit()
+&gt;&gt;&gt; j.items.all()
+[&lt;Item ball&gt;]
+&gt;&gt;&gt; Item.query.get(1)
+[&lt;Item ball&gt;]
+</code></pre></div></div>
+
+<p>We can see that our database is mostly operating as expected.</p>
+
+<h4 id="commit-the-changes">Commit the changes</h4>
+<p>Add and commit all changes to the version control. Run the following commands.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$(venv)$ git add -A
+$(venv)$ git status
+$(venv)$ git commit -m "Add and configure database models"
+$(venv)$ git checkout master
+$(venv)$ git merge ft-database-models
+$(venv)$ git push -u origin master
+</code></pre></div></div>
+
+  	</div>
+    <div class="post-footer">
+        <div class="page-navigation">
+            
+                <a class="prev" href="/programming/python/2019/02/14/python-network-programming.html">&laquo; Network Programming in Python</a>
+            
+            
+                <a class="next" href="/flask/python/2019/03/08/catalog-api-part2.html">Building Web APIs with Flask - Part 2 &raquo;</a>
+            
+        </div>
+    </div>
+  </article>
+</div>
+
+    </div>
+  </section>
+
+  <script src="/assets/js/index.js"></script>
+</body>
+</html>

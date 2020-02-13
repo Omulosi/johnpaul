@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>React ContextAPI | John Paul</title><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>React ContextAPI | JP Mulongo’s blog</title>
+<meta name="generator" content="Jekyll v4.0.0" />
+<meta property="og:title" content="React ContextAPI" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="At the end of this post, you should be able to: Describe what the Context API is and the problem it solves Provide data to the component tree using a context provider Consume data from a context object in nested components" />
+<meta property="og:description" content="At the end of this post, you should be able to: Describe what the Context API is and the problem it solves Provide data to the component tree using a context provider Consume data from a context object in nested components" />
+<link rel="canonical" href="http://localhost:4000/react/2020/01/06/react-context-api.html" />
+<meta property="og:url" content="http://localhost:4000/react/2020/01/06/react-context-api.html" />
+<meta property="og:site_name" content="JP Mulongo’s blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2020-01-06T01:58:00+03:00" />
+<script type="application/ld+json">
+{"description":"At the end of this post, you should be able to: Describe what the Context API is and the problem it solves Provide data to the component tree using a context provider Consume data from a context object in nested components","headline":"React ContextAPI","dateModified":"2020-01-06T01:58:00+03:00","datePublished":"2020-01-06T01:58:00+03:00","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/react/2020/01/06/react-context-api.html"},"url":"http://localhost:4000/react/2020/01/06/react-context-api.html","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="JP Mulongo's blog" /><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/7.0.0/normalize.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.css" integrity="sha256-46qynGAkLSFpVbEBog43gvNhfrOj+BmwXdxFgVK/Kvc=" crossorigin="anonymous" />
+
+    <link href="https://fonts.googleapis.com/css?family=Lora:400,700|Roboto+Slab:400,700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href=/assets/css/styles.css>
+
+</head>
+
+<body>
+
+  <section class="main-page">
+    <div class="sidebar">
+    <h1 class="blog-title">
+      <a href=/ title="John Paul Mulongo" rel="home">John Paul</a>
+    </h1>
+
+    <ul class="main-menu">
+      <li class="menu-item nav__link"><a href=/>Home</a></li>
+      <li class="menu-item nav__link"><a href=/blog>Blog</a></li>
+      <li class="menu-item nav__link"><a href=/#footer>Contact</a></li>
+      <li class="menu-item nav__link"><a href=/#work>Projects</a></li>
+      <li class="menu-item nav__link"><a href=/now>Now</a></li>
+    </ul>
+
+    <ul class="sidebar-social">
+        <li class="social__item">
+            <a class="social__link" href="https://twitter.com/jp_mulongo" target="_blank">
+                <i class="fab fa-twitter"></i>
+            </a>
+        </li>
+        <li class="social__item">
+            <a class="social__link" href="https://github.com/Omulosi" target="_blank">
+                <i class="fab fa-github"></i>
+            </a>
+        </li>
+    </ul>
+
+</div>
+
+
+    <div class="main-content">
+
+
+    <header class="header-nav">
+    <button class="sidebar-toggle" aria-label="toggle navigation">
+        <span class="hamburger"></span>
+    </button>
+</header>
+
+    <div class="blog-index">
+  <a href=/blog>Blog</a>
+</div>
+<div class="blog-post">
+  <article >
+    <header>
+      <h1 class="post-title">React ContextAPI</h1>
+      <time class="post-date">
+        06 January 2020
+      </time>
+    </header>
+    <div class="post-content">
+  	    <p>At the end of this post, you should be able to:</p>
+<ul>
+  <li>Describe what the Context API is and the problem it solves</li>
+  <li>Provide data to the component tree using a context provider</li>
+  <li>Consume data from a context object in nested components</li>
+</ul>
+
+<h2 id="what-is-the-context-api">What is the Context API</h2>
+<p>In a typical application, state is usually passed down from parent to children
+components using props. Some scenarios usually force you to pass props through intermediate
+components, which may not necessarily use the prop in question, a situation called prop drilling.
+This quickly becomes cumbersome and difficult to scale in large applications.</p>
+
+<p>Such cases arise when:</p>
+<ul>
+  <li>You have global data that is shared by many React components e.g locale preference or UI theme.</li>
+  <li>You need to pass props deeply nested elements</li>
+</ul>
+
+<p>The Context API is used to solve this problem. It provides a different way for passing
+data around components.</p>
+
+<p>Context provides a way to globally share data by doing away with the need for
+passing props through intermediate components. This is especially helpful when
+the data to be shared needs to be accessible to many components at different nesting
+levels.</p>
+
+<h2 id="using-context-api">Using Context API</h2>
+<p>Context API allows us to create what is called a <code class="highlighter-rouge">Context Object</code>.</p>
+
+<p>Creating a  <code class="highlighter-rouge">Context Object</code> is a simple as executing the following code.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="p">{</span> <span class="nx">createContext</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">react</span><span class="dl">'</span><span class="p">;</span>
+<span class="kd">const</span> <span class="nx">ContextObject</span> <span class="o">=</span> <span class="nx">createObject</span><span class="p">();</span>
+</code></pre></div></div>
+
+<p>This is all there is to creating a Context Object.</p>
+
+<p>This object provides us with two important components:</p>
+<ul>
+  <li><code class="highlighter-rouge">ContextObject.Provider</code></li>
+  <li><code class="highlighter-rouge">ContextObject.Consumer</code></li>
+</ul>
+
+<p>The <code class="highlighter-rouge">Provider</code> component accepts a single prop called <code class="highlighter-rouge">value</code>. This prop is used to provide
+data across the app.</p>
+
+<p>This is how we provide data across the app using the provider component.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">#</span> <span class="nx">prev</span> <span class="nx">code</span>
+
+<span class="o">&lt;</span><span class="nx">ContextObject</span><span class="p">.</span><span class="nx">Provider</span> <span class="nx">value</span><span class="o">=</span><span class="p">{</span><span class="nx">dataToPassDown</span><span class="p">}</span><span class="o">&gt;</span>
+	<span class="o">&lt;</span><span class="nx">NestedComponent</span> <span class="o">/&gt;</span>
+	<span class="o">&lt;</span><span class="nx">AnotherNestedComponet</span> <span class="o">/&gt;</span>
+<span class="o">&lt;</span><span class="sr">/ContextObject.Provider</span><span class="err">&gt;
+</span></code></pre></div></div>
+
+<p>Any nested component is now able to read the data passed down, no matter how deep it is in the tree.</p>
+
+<p>So, how do we access the data passed to the nested components?</p>
+
+<p>Inside the relevant component, we execute the following code.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Imports the useContext hook from react</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">useContext</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">react</span><span class="dl">'</span><span class="p">;</span>
+
+<span class="c1">// Imports the context object you have already created.</span>
+<span class="c1">// This is the object from which you'll extract the data passed</span>
+<span class="c1">// to the Provider using the value prop.</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">ContextObject</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">../contexts</span><span class="dl">'</span><span class="p">;</span>
+
+<span class="c1">// Get the data</span>
+<span class="kd">const</span> <span class="nx">myData</span> <span class="o">=</span> <span class="nx">useContext</span><span class="p">(</span><span class="nx">ContextObject</span><span class="p">);</span>
+
+<span class="c1">// Now you are ready to use the data in your component</span>
+</code></pre></div></div>
+
+<p>This method uses <a href="https://reactjs.org/docs/hooks-intro.html">React Hooks</a> to consume data
+from the context object.</p>
+
+<p>Another method for consuming data from the context object involves defining a <code class="highlighter-rouge">contextType</code>
+property in a <strong>class component</strong>.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="p">{</span> <span class="nx">ContextObject</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">../contexts</span><span class="dl">'</span><span class="p">;</span>
+
+<span class="kd">class</span> <span class="nx">NestedComponent</span> <span class="kd">extends</span> <span class="nx">React</span><span class="p">.</span><span class="nx">Component</span> <span class="p">{</span>
+  <span class="kd">static</span> <span class="nx">contextType</span> <span class="o">=</span> <span class="nx">ContextObject</span><span class="p">;</span>
+
+  <span class="kd">const</span> <span class="nx">myData</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">context</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Here, we define a <code class="highlighter-rouge">contextType</code> property on a class component and assign to it the
+<strong>Context Object</strong>.</p>
+
+<p>We then consume the data provided by the Context Object’s Provider using <code class="highlighter-rouge">this.context</code>.</p>
+
+<p>This method allows to subscribe to only a single context</p>
+
+  	</div>
+    <div class="post-footer">
+        <div class="page-navigation">
+            
+                <a class="prev" href="/linux/2019/09/28/linux-image-converter.html">&laquo; Converting images from the linux command line</a>
+            
+            
+                <a class="next" href="/react/2020/01/06/context-api-reducer-pattern.html">React ContextAPI and the Reducer Pattern &raquo;</a>
+            
+        </div>
+    </div>
+  </article>
+</div>
+
+    </div>
+  </section>
+
+  <script src="/assets/js/index.js"></script>
+</body>
+</html>

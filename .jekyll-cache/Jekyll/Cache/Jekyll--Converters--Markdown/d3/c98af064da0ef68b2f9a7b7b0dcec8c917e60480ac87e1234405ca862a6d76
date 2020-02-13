@@ -1,0 +1,7 @@
+I"<p>At the end of this post, you should be able to:</p>
+<ul>
+  <li>Describe what the Context API is and the problem it solves</li>
+  <li>Provide data to the component tree using a context provider</li>
+  <li>Consume data from a context object in nested components</li>
+</ul>
+:ET

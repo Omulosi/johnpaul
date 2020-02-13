@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adding pagination to your Jekyll site | John Paul</title><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Adding pagination to your Jekyll site | JP Mulongo’s blog</title>
+<meta name="generator" content="Jekyll v4.0.0" />
+<meta property="og:title" content="Adding pagination to your Jekyll site" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="In blogs, it’s pretty common to list posts over multiple pages. Jekyll provides a way to automatically list your posts over multiple numbered pages. Having to scroll over a long list of numerous posts can be pretty annoying and results in poor user experience." />
+<meta property="og:description" content="In blogs, it’s pretty common to list posts over multiple pages. Jekyll provides a way to automatically list your posts over multiple numbered pages. Having to scroll over a long list of numerous posts can be pretty annoying and results in poor user experience." />
+<link rel="canonical" href="http://localhost:4000/jekyll/2019/09/08/adding-pagination-jekyll-site.html" />
+<meta property="og:url" content="http://localhost:4000/jekyll/2019/09/08/adding-pagination-jekyll-site.html" />
+<meta property="og:site_name" content="JP Mulongo’s blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2019-09-08T10:13:36+03:00" />
+<script type="application/ld+json">
+{"description":"In blogs, it’s pretty common to list posts over multiple pages. Jekyll provides a way to automatically list your posts over multiple numbered pages. Having to scroll over a long list of numerous posts can be pretty annoying and results in poor user experience.","headline":"Adding pagination to your Jekyll site","dateModified":"2019-09-08T10:13:36+03:00","datePublished":"2019-09-08T10:13:36+03:00","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/jekyll/2019/09/08/adding-pagination-jekyll-site.html"},"url":"http://localhost:4000/jekyll/2019/09/08/adding-pagination-jekyll-site.html","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="JP Mulongo's blog" /><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/7.0.0/normalize.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.css" integrity="sha256-46qynGAkLSFpVbEBog43gvNhfrOj+BmwXdxFgVK/Kvc=" crossorigin="anonymous" />
+
+    <link href="https://fonts.googleapis.com/css?family=Lora:400,700|Roboto+Slab:400,700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href=/assets/css/styles.css>
+
+</head>
+
+<body>
+
+  <section class="main-page">
+    <div class="sidebar">
+    <h1 class="blog-title">
+      <a href=/ title="John Paul Mulongo" rel="home">John Paul</a>
+    </h1>
+
+    <ul class="main-menu">
+      <li class="menu-item nav__link"><a href=/>Home</a></li>
+      <li class="menu-item nav__link"><a href=/blog>Blog</a></li>
+      <li class="menu-item nav__link"><a href=/#footer>Contact</a></li>
+      <li class="menu-item nav__link"><a href=/#work>Projects</a></li>
+      <li class="menu-item nav__link"><a href=/now>Now</a></li>
+    </ul>
+
+    <ul class="sidebar-social">
+        <li class="social__item">
+            <a class="social__link" href="https://twitter.com/jp_mulongo" target="_blank">
+                <i class="fab fa-twitter"></i>
+            </a>
+        </li>
+        <li class="social__item">
+            <a class="social__link" href="https://github.com/Omulosi" target="_blank">
+                <i class="fab fa-github"></i>
+            </a>
+        </li>
+    </ul>
+
+</div>
+
+
+    <div class="main-content">
+
+
+    <header class="header-nav">
+    <button class="sidebar-toggle" aria-label="toggle navigation">
+        <span class="hamburger"></span>
+    </button>
+</header>
+
+    <div class="blog-index">
+  <a href=/blog>Blog</a>
+</div>
+<div class="blog-post">
+  <article >
+    <header>
+      <h1 class="post-title">Adding pagination to your Jekyll site</h1>
+      <time class="post-date">
+        08 September 2019
+      </time>
+    </header>
+    <div class="post-content">
+  	    <p>In blogs, it’s pretty common to list posts over multiple pages. Jekyll provides
+a way to automatically list your posts over multiple numbered pages. Having to
+scroll over a long list of numerous posts can be pretty annoying and results in
+poor user experience.</p>
+
+<p>So, how can you add pagination to your site? The process is pretty simple. All
+we have to do is leverage Jekyll’s plugin system. Plugins are a way to quickly
+add extra functionality to a Jekyll site without too much hastle.</p>
+
+<p>For pagination, Jekyll offers a pagination plugin called <code class="highlighter-rouge">jekyll-paginate</code>. To
+add this plugin to your site, locate your <code class="highlighter-rouge">_config.yml</code> file and under the
+plugins section, add the <code class="highlighter-rouge">jekyll-paginate</code> plugin. Then run <code class="highlighter-rouge">gem install
+jekyll-paginate</code>.</p>
+
+<p>Adding the plugin is just the first step. Still in the <code class="highlighter-rouge">_config.yml</code> file, add
+the following settings:</p>
+
+<div class="language-rb highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Number of listings per page</span>
+<span class="ss">paginate: </span><span class="mi">5</span>
+
+<span class="c1"># Paginate path</span>
+<span class="ss">paginate_path: </span><span class="sr">/blog/</span><span class="n">page</span><span class="ss">:num</span><span class="o">/</span>
+</code></pre></div></div>
+
+<p>The paginate setting specifies the maximum number of posts per page. The
+<code class="highlighter-rouge">paginate_path</code> setting specifies where each pagination page will be output i.e
+the first 5 posts will be output in the <code class="highlighter-rouge">/blog/page1/</code> directory and so on.</p>
+
+<p>Then in the file where you have your post listings (this would be where you loop
+through <code class="highlighter-rouge">site.posts</code>), change <code class="highlighter-rouge">site.posts</code> to <code class="highlighter-rouge">paginator.posts</code>. The
+<code class="highlighter-rouge">jekyll-paginate</code> plugin provides a paginator liquid object that you can use to
+loop through all the posts.</p>
+
+<p>Finally, to display the pagination links at the bottom of the page, add the
+following code to the file in which you loop through the posts.</p>
+
+<figure class="highlight"><pre><code class="language-html" data-lang="html"><span class="c">&lt;!-- Pagination links --&gt;</span>
+<span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"pagination"</span><span class="nt">&gt;</span>
+  {% if paginator.previous_page %}
+    <span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">"{{ paginator.previous_page_path }}"</span> <span class="na">class=</span><span class="s">"previous"</span><span class="nt">&gt;</span>
+      Previous
+    <span class="nt">&lt;/a&gt;</span>
+  {% else %}
+    <span class="nt">&lt;span</span> <span class="na">class=</span><span class="s">"previous"</span><span class="nt">&gt;</span>Previous<span class="nt">&lt;/span&gt;</span>
+  {% endif %}
+  <span class="nt">&lt;span</span> <span class="na">class=</span><span class="s">"page_number "</span><span class="nt">&gt;</span>
+    Pag;e: {{ paginator.page }} of {{ paginator.total_pages }}
+  <span class="nt">&lt;/span&gt;</span>
+  {% if paginator.next_page %}
+    <span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">"{{ paginator.next_page_path }}"</span> <span class="na">class=</span><span class="s">"next"</span><span class="nt">&gt;</span>Next<span class="nt">&lt;/a&gt;</span>
+  {% else %}
+    <span class="nt">&lt;span</span> <span class="na">class=</span><span class="s">"next "</span><span class="nt">&gt;</span>Next<span class="nt">&lt;/span&gt;</span>
+  {% endif %}
+<span class="nt">&lt;/div&gt;</span></code></pre></figure>
+
+<p>And that’s it.</p>
+
+  	</div>
+    <div class="post-footer">
+        <div class="page-navigation">
+            
+                <a class="prev" href="/javascript/programming/2019/09/06/asynchronous-xhr-request-js.html">&laquo; Making Asynchronous JavaScript Requests with XHR</a>
+            
+            
+                <a class="next" href="/javascript/2019/09/08/javascript-functions-beyond-basics.html">JavaScript functions: Beyond the Basics &raquo;</a>
+            
+        </div>
+    </div>
+  </article>
+</div>
+
+    </div>
+  </section>
+
+  <script src="/assets/js/index.js"></script>
+</body>
+</html>

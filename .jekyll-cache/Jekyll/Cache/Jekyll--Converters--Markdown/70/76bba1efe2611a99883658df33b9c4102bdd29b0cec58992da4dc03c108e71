@@ -1,0 +1,6 @@
+I"R<p>The backend of our application is now nicely set up. We have tested that all
+the API endpoints are working as expected. This section will incorporate
+authentication and authorization to our API. We will use an external package
+for this purpose that makes everything that much easy, the
+<a href="">Flask-JWT-Extended</a> extension.</p>
+:ET

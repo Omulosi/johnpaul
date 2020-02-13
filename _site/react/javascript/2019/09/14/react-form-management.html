@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Management in React | John Paul</title><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Form Management in React | JP Mulongo’s blog</title>
+<meta name="generator" content="Jekyll v4.0.0" />
+<meta property="og:title" content="Form Management in React" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Forms are the lingua franca of getting external data from users into out applications. The are different from other html elements in that they naturally maintain state. However, we may want to keep track of the information gathered from forms in our JavaScript code as this may be more convenient." />
+<meta property="og:description" content="Forms are the lingua franca of getting external data from users into out applications. The are different from other html elements in that they naturally maintain state. However, we may want to keep track of the information gathered from forms in our JavaScript code as this may be more convenient." />
+<link rel="canonical" href="http://localhost:4000/react/javascript/2019/09/14/react-form-management.html" />
+<meta property="og:url" content="http://localhost:4000/react/javascript/2019/09/14/react-form-management.html" />
+<meta property="og:site_name" content="JP Mulongo’s blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2019-09-14T10:13:36+03:00" />
+<script type="application/ld+json">
+{"description":"Forms are the lingua franca of getting external data from users into out applications. The are different from other html elements in that they naturally maintain state. However, we may want to keep track of the information gathered from forms in our JavaScript code as this may be more convenient.","headline":"Form Management in React","dateModified":"2019-09-14T10:13:36+03:00","datePublished":"2019-09-14T10:13:36+03:00","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/react/javascript/2019/09/14/react-form-management.html"},"url":"http://localhost:4000/react/javascript/2019/09/14/react-form-management.html","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="JP Mulongo's blog" /><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/7.0.0/normalize.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.css" integrity="sha256-46qynGAkLSFpVbEBog43gvNhfrOj+BmwXdxFgVK/Kvc=" crossorigin="anonymous" />
+
+    <link href="https://fonts.googleapis.com/css?family=Lora:400,700|Roboto+Slab:400,700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href=/assets/css/styles.css>
+
+</head>
+
+<body>
+
+  <section class="main-page">
+    <div class="sidebar">
+    <h1 class="blog-title">
+      <a href=/ title="John Paul Mulongo" rel="home">John Paul</a>
+    </h1>
+
+    <ul class="main-menu">
+      <li class="menu-item nav__link"><a href=/>Home</a></li>
+      <li class="menu-item nav__link"><a href=/blog>Blog</a></li>
+      <li class="menu-item nav__link"><a href=/#footer>Contact</a></li>
+      <li class="menu-item nav__link"><a href=/#work>Projects</a></li>
+      <li class="menu-item nav__link"><a href=/now>Now</a></li>
+    </ul>
+
+    <ul class="sidebar-social">
+        <li class="social__item">
+            <a class="social__link" href="https://twitter.com/jp_mulongo" target="_blank">
+                <i class="fab fa-twitter"></i>
+            </a>
+        </li>
+        <li class="social__item">
+            <a class="social__link" href="https://github.com/Omulosi" target="_blank">
+                <i class="fab fa-github"></i>
+            </a>
+        </li>
+    </ul>
+
+</div>
+
+
+    <div class="main-content">
+
+
+    <header class="header-nav">
+    <button class="sidebar-toggle" aria-label="toggle navigation">
+        <span class="hamburger"></span>
+    </button>
+</header>
+
+    <div class="blog-index">
+  <a href=/blog>Blog</a>
+</div>
+<div class="blog-post">
+  <article >
+    <header>
+      <h1 class="post-title">Form Management in React</h1>
+      <time class="post-date">
+        14 September 2019
+      </time>
+    </header>
+    <div class="post-content">
+  	    <p>Forms are the lingua franca of getting external data from users into out
+applications. The are different from other html elements in that they naturally
+maintain state. However, we may want to keep track of the information gathered
+from forms in our JavaScript code as this may be more convenient.</p>
+
+<p>This is usually achieved using a technique called controlled components. We
+basically maintain the state from forms in our components rather than have the
+forms do this themselves. This ensures we have the so called <strong>single source of
+truth</strong> in our components by having all the state data in one place. This is
+done by having a <code class="highlighter-rouge">handleChange</code> function that will set the component state
+whenever a user interacts with the input. The <code class="highlighter-rouge">input</code> fields are given an
+<code class="highlighter-rouge">onChange</code> event that responds to user interaction and call the <code class="highlighter-rouge">handleChange</code>
+handler that transfers form data to component state.</p>
+
+<p>Let’s start with  an example.</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">const</span> <span class="nx">Form</span> <span class="o">=</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="kd">const</span> <span class="p">[</span><span class="nx">inputValue</span><span class="p">,</span> <span class="nx">setInputValue</span><span class="p">]</span> <span class="o">=</span> <span class="nx">useState</span><span class="p">(</span><span class="dl">""</span><span class="p">);</span>
+
+  <span class="kd">const</span> <span class="nx">changeHandler</span> <span class="o">=</span> <span class="nx">event</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">setInputValue</span><span class="p">(</span><span class="nx">event</span><span class="p">.</span><span class="nx">target</span><span class="p">.</span><span class="nx">value</span><span class="p">);</span>
+  <span class="p">};</span>
+
+  <span class="k">return</span> <span class="p">(</span>
+    <span class="o">&lt;</span><span class="nx">div</span> <span class="nx">className</span><span class="o">=</span><span class="dl">"</span><span class="s2">App</span><span class="dl">"</span><span class="o">&gt;</span>
+      <span class="o">&lt;</span><span class="nx">form</span><span class="o">&gt;</span>
+        <span class="o">&lt;</span><span class="nx">label</span><span class="o">&gt;</span>
+          <span class="nx">Favorite</span> <span class="nx">Ice</span> <span class="na">Cream</span><span class="p">:</span>
+          <span class="o">&lt;</span><span class="nx">input</span> <span class="nx">type</span><span class="o">=</span><span class="dl">"</span><span class="s2">text</span><span class="dl">"</span> <span class="nx">onChange</span><span class="o">=</span><span class="p">{</span><span class="nx">changeHandler</span><span class="p">}</span> <span class="sr">/</span><span class="err">&gt;
+</span>        <span class="o">&lt;</span><span class="sr">/label</span><span class="err">&gt;
+</span>      <span class="o">&lt;</span><span class="sr">/form</span><span class="err">&gt;
+</span>    <span class="o">&lt;</span><span class="sr">/div</span><span class="err">&gt;
+</span>  <span class="p">);</span>
+<span class="p">};</span>
+</code></pre></div></div>
+
+<p>The <code class="highlighter-rouge">Form</code> component shown above ensures that the component state stays in sync
+with the input data.</p>
+
+<p>To handle multiple inputs, we can use the following naive implementation.</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nx">React</span><span class="p">,</span> <span class="p">{</span> <span class="nx">useState</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">"</span><span class="s2">react</span><span class="dl">"</span><span class="p">;</span>
+<span class="k">import</span> <span class="dl">"</span><span class="s2">./App.css</span><span class="dl">"</span><span class="p">;</span>
+
+<span class="kd">function</span> <span class="nx">App</span><span class="p">()</span> <span class="p">{</span>
+  <span class="kd">const</span> <span class="p">[</span><span class="nx">name</span><span class="p">,</span> <span class="nx">setName</span><span class="p">]</span> <span class="o">=</span> <span class="nx">useState</span><span class="p">(</span><span class="dl">""</span><span class="p">);</span>
+  <span class="kd">const</span> <span class="p">[</span><span class="nx">password</span><span class="p">,</span> <span class="nx">setPassword</span><span class="p">]</span> <span class="o">=</span> <span class="nx">useState</span><span class="p">(</span><span class="dl">""</span><span class="p">);</span>
+
+  <span class="kd">const</span> <span class="nx">handleNameChange</span> <span class="o">=</span> <span class="nx">event</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">setName</span><span class="p">(</span><span class="nx">event</span><span class="p">.</span><span class="nx">target</span><span class="p">.</span><span class="nx">value</span><span class="p">);</span>
+  <span class="p">};</span>
+
+  <span class="kd">const</span> <span class="nx">handlePasswordChange</span> <span class="o">=</span> <span class="nx">event</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">setPassword</span><span class="p">(</span><span class="nx">event</span><span class="p">.</span><span class="nx">target</span><span class="p">.</span><span class="nx">value</span><span class="p">);</span>
+  <span class="p">};</span>
+
+  <span class="kd">const</span> <span class="nx">handleSubmit</span> <span class="o">=</span> <span class="nx">event</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">event</span><span class="p">.</span><span class="nx">preventDefault</span><span class="p">();</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">name</span><span class="p">);</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">password</span><span class="p">);</span>
+  <span class="p">};</span>
+
+  <span class="k">return</span> <span class="p">(</span>
+    <span class="o">&lt;</span><span class="nx">div</span> <span class="nx">className</span><span class="o">=</span><span class="dl">"</span><span class="s2">App</span><span class="dl">"</span><span class="o">&gt;</span>
+      <span class="p">{</span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">({</span> <span class="nx">name</span> <span class="p">})}</span>
+      <span class="p">{</span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">({</span> <span class="nx">password</span> <span class="p">})}</span>
+      <span class="o">&lt;</span><span class="nx">form</span> <span class="nx">onSubmit</span><span class="o">=</span><span class="p">{</span><span class="nx">event</span> <span class="o">=&gt;</span> <span class="nx">handleSubmit</span><span class="p">(</span><span class="nx">event</span><span class="p">)}</span><span class="o">&gt;</span>
+        <span class="o">&lt;</span><span class="nx">label</span><span class="o">&gt;</span>
+          <span class="na">Username</span><span class="p">:</span>
+          <span class="o">&lt;</span><span class="nx">input</span> <span class="nx">type</span><span class="o">=</span><span class="dl">"</span><span class="s2">text</span><span class="dl">"</span> <span class="nx">onChange</span><span class="o">=</span><span class="p">{</span><span class="nx">event</span> <span class="o">=&gt;</span> <span class="nx">handleNameChange</span><span class="p">(</span><span class="nx">event</span><span class="p">)}</span> <span class="sr">/</span><span class="err">&gt;
+</span>        <span class="o">&lt;</span><span class="sr">/label</span><span class="err">&gt;
+</span>        <span class="o">&lt;</span><span class="nx">label</span><span class="o">&gt;</span>
+          <span class="na">Password</span><span class="p">:</span>
+          <span class="o">&lt;</span><span class="nx">input</span> <span class="nx">type</span><span class="o">=</span><span class="dl">"</span><span class="s2">text</span><span class="dl">"</span> <span class="nx">onChange</span><span class="o">=</span><span class="p">{</span><span class="nx">event</span> <span class="o">=&gt;</span> <span class="nx">handlePasswordChange</span><span class="p">(</span><span class="nx">event</span><span class="p">)}</span> <span class="sr">/</span><span class="err">&gt;
+</span>        <span class="o">&lt;</span><span class="sr">/label</span><span class="err">&gt;
+</span>        <span class="o">&lt;</span><span class="nx">button</span><span class="o">&gt;</span><span class="nx">Submit</span><span class="o">!&lt;</span><span class="sr">/button</span><span class="err">&gt;
+</span>      <span class="o">&lt;</span><span class="sr">/form</span><span class="err">&gt;
+</span>    <span class="o">&lt;</span><span class="sr">/div</span><span class="err">&gt;
+</span>  <span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">export</span> <span class="k">default</span> <span class="nx">App</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>This gets tired pretty quick. What we have, say 20 input fields to keep track
+of? A better way would be use an object tha will have the names of the input fields
+as keys and their data as values. This would be accomplished as below.</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nx">React</span><span class="p">,</span> <span class="p">{</span> <span class="nx">useState</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">"</span><span class="s2">react</span><span class="dl">"</span><span class="p">;</span>
+<span class="k">import</span> <span class="dl">"</span><span class="s2">./App.css</span><span class="dl">"</span><span class="p">;</span>
+
+<span class="kd">function</span> <span class="nx">App</span><span class="p">()</span> <span class="p">{</span>
+  <span class="kd">const</span> <span class="p">[</span><span class="nx">user</span><span class="p">,</span> <span class="nx">setUser</span><span class="p">]</span> <span class="o">=</span> <span class="nx">useState</span><span class="p">({</span> <span class="na">name</span><span class="p">:</span> <span class="dl">""</span><span class="p">,</span> <span class="na">password</span><span class="p">:</span> <span class="dl">""</span> <span class="p">});</span>
+
+  <span class="kd">const</span> <span class="nx">handleChange</span> <span class="o">=</span> <span class="nx">event</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">setUser</span><span class="p">({</span> <span class="p">...</span><span class="nx">user</span><span class="p">,</span> <span class="p">[</span><span class="nx">event</span><span class="p">.</span><span class="nx">target</span><span class="p">.</span><span class="nx">name</span><span class="p">]:</span> <span class="nx">event</span><span class="p">.</span><span class="nx">target</span><span class="p">.</span><span class="nx">value</span> <span class="p">});</span>
+  <span class="p">};</span>
+
+  <span class="kd">const</span> <span class="nx">handleSubmit</span> <span class="o">=</span> <span class="nx">event</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">event</span><span class="p">.</span><span class="nx">preventDefault</span><span class="p">();</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">user</span><span class="p">.</span><span class="nx">name</span><span class="p">);</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">user</span><span class="p">.</span><span class="nx">password</span><span class="p">);</span>
+  <span class="p">};</span>
+
+  <span class="k">return</span> <span class="p">(</span>
+    <span class="o">&lt;</span><span class="nx">div</span> <span class="nx">className</span><span class="o">=</span><span class="dl">"</span><span class="s2">App</span><span class="dl">"</span><span class="o">&gt;</span>
+      <span class="p">{</span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">user</span><span class="p">)}</span>
+      <span class="o">&lt;</span><span class="nx">form</span> <span class="nx">onSubmit</span><span class="o">=</span><span class="p">{</span><span class="nx">event</span> <span class="o">=&gt;</span> <span class="nx">handleSubmit</span><span class="p">(</span><span class="nx">event</span><span class="p">)}</span><span class="o">&gt;</span>
+        <span class="o">&lt;</span><span class="nx">label</span><span class="o">&gt;</span>
+          <span class="na">Username</span><span class="p">:</span>
+          <span class="o">&lt;</span><span class="nx">input</span> <span class="nx">type</span><span class="o">=</span><span class="dl">"</span><span class="s2">text</span><span class="dl">"</span> <span class="nx">onChange</span><span class="o">=</span><span class="p">{</span><span class="nx">handleChange</span><span class="p">}</span> <span class="sr">/</span><span class="err">&gt;
+</span>        <span class="o">&lt;</span><span class="sr">/label</span><span class="err">&gt;
+</span>        <span class="o">&lt;</span><span class="nx">label</span><span class="o">&gt;</span>
+          <span class="na">Password</span><span class="p">:</span>
+          <span class="o">&lt;</span><span class="nx">input</span> <span class="nx">type</span><span class="o">=</span><span class="dl">"</span><span class="s2">text</span><span class="dl">"</span> <span class="nx">onChange</span><span class="o">=</span><span class="p">{</span><span class="nx">handleChange</span><span class="p">}</span> <span class="sr">/</span><span class="err">&gt;
+</span>        <span class="o">&lt;</span><span class="sr">/label</span><span class="err">&gt;
+</span>        <span class="o">&lt;</span><span class="nx">button</span><span class="o">&gt;</span><span class="nx">Submit</span><span class="o">!&lt;</span><span class="sr">/button</span><span class="err">&gt;
+</span>      <span class="o">&lt;</span><span class="sr">/form</span><span class="err">&gt;
+</span>    <span class="o">&lt;</span><span class="sr">/div</span><span class="err">&gt;
+</span>  <span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">export</span> <span class="k">default</span> <span class="nx">App</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>Here, we have used the spread operator to create a new object literal with
+copies of the original keys and values. We have also used a computed property to
+set a new key-value pair for the input data in question and replace its original
+data with the current data.</p>
+
+<p>To learn more about managing forms in React, check out <a href="https://reactjs.org/docs/forms.html">this</a>
+article in their docs.</p>
+
+  	</div>
+    <div class="post-footer">
+        <div class="page-navigation">
+            
+                <a class="prev" href="/react/javascript/2019/09/13/intro-to-react-hooks.html">&laquo; Introduction to React Hooks</a>
+            
+            
+                <a class="next" href="/react/javascript/2019/09/15/react-advanced-form-management.html">Advanced Form Management in React using Formik &raquo;</a>
+            
+        </div>
+    </div>
+  </article>
+</div>
+
+    </div>
+  </section>
+
+  <script src="/assets/js/index.js"></script>
+</body>
+</html>

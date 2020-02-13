@@ -1,0 +1,220 @@
+I"J3<p>In this post, we are going to expore network programming concepts in python by
+building our own client and server from the ground up using only the modules
+provided natively by python.</p>
+
+<p>First, we have to understand what a client and a server are. Put simply, a
+server is a piece of software or hardware that provides a “service” needed by
+one or more clients. It’s function is to continuous wait for requests from
+clients, respond to those requests, and then wait for more requests. Servers
+are usually meant to run indefinitely. For our case, a server will be a python
+program that interacts with and provides functionality to a client program.</p>
+
+<p>Clients contact a server, issue a request sending any necessary data and wait
+for a reply. Each request made by a client to a server is a separate transaction.</p>
+
+<p>Servers are fundamental to modern networks and provide services such as
+filesharing, authentication, databases, webpage information, etc.</p>
+
+<p>Before communication can take place, communication endpoints have to be
+created. In networking, these endpoints are called <strong>sockets</strong>.</p>
+
+<p>Sockets are grouped into address families. The most used address family is the
+<strong>AF_INET(6)</strong> which stands for <em>address family</em>: Internet. When post-pended
+with the number 6, the socket is used for IPV6 addressing.</p>
+
+<p>Sockets have to be identified by addresses. The address is comprised of a host
+name and a port number. Valid port numbers range from 0-65535. Port numbers
+less than 1024 are usually reserved for the system.</p>
+
+<p>Regardless of which address type you are using there are two different types
+of socket connections: connection oriented and connectionless.</p>
+
+<p>Connection oriented sockets are implemennted using the TCP protocol. To create
+a TCP socket, you must use <strong>SOCK_STREAM</strong> as the connection type. TCP sockets
+are used to offer reliable, unduplicated delivery of data.</p>
+
+<p>Connectionless sockets are implemented using <strong>UDP</strong> (User Datagram Protocol). To
+create a UDP socket, use <strong>SOCK_DGRAM</strong> as the socket type</p>
+
+<h2 id="creating-a-server">Creating a Server</h2>
+<p>One simple way to create a server in Python is via the socket module. This
+module provides a set of methods which enable socket based network
+communication.</p>
+
+<p>The table below provides a summary of some of the methods.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>socket</td>
+      <td>Create a new socket using the given address family, socket type and protocol number</td>
+    </tr>
+    <tr>
+      <td>bind</td>
+      <td>Bind the socket to an address</td>
+    </tr>
+    <tr>
+      <td>listen</td>
+      <td>Enable a server to accept communications</td>
+    </tr>
+    <tr>
+      <td>accept</td>
+      <td>Accept a connection. Must be bound to an address and listening for connections</td>
+    </tr>
+    <tr>
+      <td>connect</td>
+      <td>Connect to a remote socket at address</td>
+    </tr>
+    <tr>
+      <td>sendall</td>
+      <td>Send data to the socket. The socket must be connected to a remote</td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td>socket. Continues to send data until all data has been sent or an error occurs.</td>
+    </tr>
+    <tr>
+      <td>recv</td>
+      <td>Receive data from the socket. Must be given a buffer size e.g 1024</td>
+    </tr>
+    <tr>
+      <td>close</td>
+      <td>Mark the socket closed</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>#</p>
+
+<p>The <code class="highlighter-rouge">socket.socket()</code> method has the following signature:</p>
+
+<p><code class="highlighter-rouge">socket.socket(socket_family, socket_type, protocol=0)</code></p>
+
+<p>The <code class="highlighter-rouge">socket_family</code> is either <strong>AF_INET</strong> or <strong>AF_UNIX</strong>. The <code class="highlighter-rouge">socket_type</code> is
+either <strong>SOCK_STREAM</strong> or <strong>SOCK_DGRAM</strong>. The protocol is usually left out
+defaulting to 0.</p>
+
+<h3 id="tcp-server">TCP Server</h3>
+
+<p>Before jumping into the code, I will first provide some general pseudocode
+that shows how a typical server may be created. The snippet below provides the
+general steps that are followed when creating a server. Bear in mind that is
+not the only way you could create a server.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="c1"># First create a server socket
+</span><span class="n">server_sock</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">()</span>
+
+<span class="c1"># Bind the socket to an address. Address is a (host, port) pair.
+</span><span class="n">server_sock</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">address</span><span class="p">)</span>
+
+<span class="c1"># Listen for connections
+</span><span class="n">server_sock</span><span class="o">.</span><span class="n">listen</span><span class="p">()</span>
+
+<span class="c1"># Start the server infinite loop
+</span><span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+
+    <span class="c1"># Accept client connection. A new socket object is returned together
+</span>    <span class="c1"># with the socket address by the accept() method. The new socket object
+</span>    <span class="c1"># is what is used to carry out communication.
+</span>    <span class="n">client_sock</span> <span class="o">=</span> <span class="n">server_sock</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span>
+    
+    <span class="c1"># Start communication loop: receive and send data to client
+</span>    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="c1"># Receive/ send data
+</span>        <span class="n">client_sock</span><span class="o">.</span><span class="n">recv</span><span class="p">()</span><span class="o">/</span><span class="n">client_sock</span><span class="o">.</span><span class="n">send</span><span class="p">()</span>
+
+    <span class="c1"># Close client socket
+</span>    <span class="n">client_sock</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<span class="c1"># Optionally close server socker
+</span><span class="n">server_sock</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+</code></pre></div></div>
+
+<p>Let us now build a real server. This server will accept messages from clients
+and return the same messages prepended with a timestamp. The script for this
+server is shown below:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="c1"># server.py
+</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">ctime</span>
+<span class="kn">import</span> <span class="nn">socket</span>
+
+<span class="n">HOST</span> <span class="o">=</span> <span class="s">'0.0.0.0'</span>
+<span class="n">PORT</span> <span class="o">=</span> <span class="mi">21567</span>
+<span class="n">BUFSIZE</span> <span class="o">=</span> <span class="mi">1024</span>
+<span class="n">ADDR</span> <span class="o">=</span> <span class="p">(</span><span class="n">HOST</span><span class="p">,</span> <span class="n">PORT</span><span class="p">)</span>
+
+<span class="c1"># Set up the server
+</span><span class="n">server_sock</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">SOCK_STREAM</span><span class="p">)</span>
+<span class="n">server_sock</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">ADDR</span><span class="p">)</span>
+<span class="n">server_sock</span><span class="o">.</span><span class="n">listen</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+
+<span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">'waiting for connection...'</span><span class="p">)</span>
+    <span class="n">client_sock</span><span class="p">,</span> <span class="n">client_addr</span> <span class="o">=</span> <span class="n">server_sock</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">'...connected from: '</span><span class="p">,</span> <span class="n">addr</span><span class="p">)</span>
+
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">client_sock</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="n">BUFSIZE</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">data</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="n">client_sock</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="s">'[{}] {}'</span><span class="o">.</span><span class="nb">format</span><span class="p">(</span><span class="n">ctime</span><span class="p">(),</span> <span class="n">data</span><span class="p">))</span>
+    <span class="n">client_sock</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<span class="n">server_sock</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+</code></pre></div></div>
+<h3 id="tcp-client">TCP Client</h3>
+
+<p>The socket module also has tools for writing client programs. You will find
+that creating clients is much simpler than building servers.</p>
+
+<p>The python script below is a client program that prompts a user for messages
+to send to the server and displays the data returned from the server to the user.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="c1"># client.py
+</span>
+<span class="kn">import</span> <span class="nn">socket</span>
+
+<span class="n">HOST</span> <span class="o">=</span> <span class="s">'0.0.0.0'</span>
+<span class="n">PORT</span> <span class="o">=</span> <span class="mi">21567</span>
+<span class="n">BUFSIZE</span> <span class="o">=</span> <span class="mi">1024</span>
+<span class="n">ADDR</span> <span class="o">=</span> <span class="p">(</span><span class="n">HOST</span><span class="p">,</span> <span class="n">PORT</span><span class="p">)</span>
+
+<span class="n">client_sock</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">SOCK_STREAM</span><span class="p">)</span>
+<span class="n">client_sock</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">ADDR</span><span class="p">)</span>
+
+<span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="nb">raw_input</span><span class="p">(</span><span class="s">'&gt; '</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">data</span><span class="p">:</span>
+        <span class="k">break</span>
+    <span class="n">client_sock</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">client_sock</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="n">BUFSIZE</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">data</span><span class="p">:</span>
+        <span class="k">break</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+<span class="n">client_sock</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+</code></pre></div></div>
+<h3 id="running-the-client-and-server">Running the client and server</h3>
+<p>Start by first running the server then the client. You should see an output
+such as the examples in the screen-shots below.</p>
+
+<p>Screen-shot of server running from the terminal.</p>
+
+<p><img src="/assets/img/server.png" alt="Running server" /></p>
+
+<p>Screen-shot of client running from the terminal.</p>
+
+<p><img src="/assets/img/client.png" alt="Running client" /></p>
+:ET

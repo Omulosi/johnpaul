@@ -1,0 +1,48 @@
+title: JP Mulongo's blog
+email: mulongojohnpaul@gmail.com
+description: >- # this means to ignore newlines until "baseurl:"
+        This is my won corner on the web where I went all the little stuff
+        that I have learned and keep learning in my journey as a software
+        engineer.
+url: "https://jpmulongo.me" # the base hostname & protocol for your site, e.g. http://example.com
+twitter_username: jpmulongo
+github_username:  Omulosi
+
+rss: true
+
+# Google analytics
+google_analytics: UA-136524653-1
+
+# Pagination
+paginate: 5
+paginate_path: /blog/page:num/
+
+algolia:
+  application_id: FTC83L3UYO
+  index_name: personal-blog
+  search_only_api_key: f8332b3bb698d4be3a8a20a9bf0e4fd0
+
+collections:
+  projects:
+    output: true
+
+# Build settings
+theme: minima
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+  - jekyll-paginate
+
+
+# Exclude from processing.
+# exclude:
+#    - .sass-cache/
+#    - .jekyll-cache/
+#    - gemfiles/
+#    - Gemfile
+#    - Gemfile.lock
+#    - node_modules/
+#    - vendor/bundle/
+#    - vendor/cache/
+#    - vendor/gems/
+#    - vendor/ruby/

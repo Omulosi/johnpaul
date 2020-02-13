@@ -1,0 +1,32 @@
+I"d<p>The <code class="highlighter-rouge">fdisk</code> (format disk/fixed disk) command is used to view, create, resize,
+delete, change, copy and/or move partitions on a hard-drive. You must use the
+command as root.</p>
+
+<p>To list all disk partitions:</p>
+
+<p><code class="highlighter-rouge">fdisk -l</code></p>
+
+<p>To view a specific disk partion, use a command such as the one below:</p>
+
+<p><code class="highlighter-rouge">fdisk -l /dev/sda</code></p>
+
+<p>To check the size of a partition, use the command illustrated below:</p>
+
+<p><code class="highlighter-rouge">fdisk -s /dev/sda2</code></p>
+
+<p>To get full information on disk space usage, the <code class="highlighter-rouge">df</code> command comes in handy.</p>
+
+<p><code class="highlighter-rouge">df</code></p>
+
+<p><code class="highlighter-rouge">df -a</code></p>
+
+<p>To get the results in a more human readable form:</p>
+
+<p><code class="highlighter-rouge">df -h</code></p>
+
+<p>To get the information in bytes or MB, use either one of the commands below.</p>
+
+<p><code class="highlighter-rouge">df -k</code></p>
+
+<p><code class="highlighter-rouge">df -m</code></p>
+:ET

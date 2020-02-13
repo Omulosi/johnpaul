@@ -1,0 +1,5 @@
+I"<p>In <a href="/flask/python/2019/03/12/catalog-api-part4.html">Part 4</a>
+of this series, we looked at authentication and authorizarion. In
+this part, we are going to go in depth on how you can revoke your tokens so
+that they may no longer access your endpoints.</p>
+:ET

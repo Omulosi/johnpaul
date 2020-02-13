@@ -1,0 +1,781 @@
+I"�(<p>In <a href="/flask/python/2019/03/07/catalog-api-part1.html">part 1</a> 
+of this series, we set up the database and defined the data
+models for our application.</p>
+
+<p>In this section, we are going to design our API endpoints following the
+Representational State Transfer(REST) pattern. When web service APIs are
+designed in a way to adhere to the <a href="https://en.wikipedia.org/wiki/Representational_state_transfer">REST</a>
+constraints, they are called <strong>RESTFul APIs</strong>. In such APIs, resources are
+logically segregated and can be accessed and manipulated using HTTP requests.</p>
+
+<h2 id="creating-the-api-endpoints">Creating the API endpoints</h2>
+
+<p>We have to first identify the application’s resources and the actions that we
+will apply on these resources. The notion of a <strong>resource</strong> is key in REST.
+There isn’t a restriction on what can be a resource. Go with what makes the
+most logical sense.</p>
+
+<p>For this simple application, our resource will be <strong>items</strong>. Some of
+the actions we can perform on items include:</p>
+<ul>
+  <li>create an item</li>
+  <li>get a list of items</li>
+  <li>retrieve one item only</li>
+  <li>update an item</li>
+  <li>delete an item</li>
+</ul>
+
+<p>These actions are essentially CRUD operations and we will implement them
+using HTTP methods. In REST, each resource generally has a <strong>URI</strong> ( as we had
+discussed earlier in part 1) that provides the interface through which
+interaction with the resource occurs. The nature of these interactions, their
+effect on the resources so to speak, are defined using HTTP methods.</p>
+
+<p>This is how we will map the API calls to the actions defined above:</p>
+<ul>
+  <li><code class="highlighter-rouge">GET /items/1</code> - gets an item with id #1</li>
+  <li><code class="highlighter-rouge">GET /items</code>   - gets a collection of items</li>
+  <li><code class="highlighter-rouge">POST /items</code>  - creates an item</li>
+  <li><code class="highlighter-rouge">PATCH /items/1</code> - changes an item with id #1</li>
+  <li><code class="highlighter-rouge">DELETE /items/1</code> - deletes an item with id #1</li>
+</ul>
+
+<p>The resource will also have a respresentation. Some of the popular
+representations include:</p>
+<ul>
+  <li>XML</li>
+  <li>HTML</li>
+  <li>JSON</li>
+</ul>
+
+<p>When you request a resource, its represenatation is provided. In this
+application, we will represent our resource using JSON.</p>
+
+<p>REST URIs should always represent resources in a way that’s meaningful to the
+client. Think nouns, not verbs, when crafting your URIs, as the example above
+shows. Consider using plurals.</p>
+
+<p>Note that the HTTP methods should be used for what they are logically
+intended. For example, a <strong>GET</strong> should only retrieve an item or a collection
+of items and should have appropriate return codes.</p>
+
+<h2 id="building-the-api-interface">Building the API interface</h2>
+
+<p>To build the rest of the API, we are going to use an extension called
+<a href="https://flask-restful.readthedocs.io/en/latest/">Flask-RESTful</a>.
+This extension integrates seamlessly with flask and will allow us to quickly
+build the API.</p>
+
+<p>We will first create and move to a new feature branch.</p>
+
+<p><code class="highlighter-rouge">(venv)$ git checkout -b ft-api-endpoints</code></p>
+
+<p>Install Flask-RESTful with the following command.</p>
+
+<p><code class="highlighter-rouge">(venv)pip install flask-restful</code></p>
+
+<p>We will now set up flask-restful in our application. Add the following code in
+the <code class="highlighter-rouge">app.api.v1</code> package.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="c1"># __init__.py
+</span>
+<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Blueprint</span>
+<span class="kn">from</span> <span class="nn">flask_restful</span> <span class="kn">import</span> <span class="n">Api</span>
+
+<span class="n">bp</span> <span class="o">=</span> <span class="n">Blueprint</span><span class="p">(</span><span class="s">'catalog'</span><span class="p">,</span> <span class="n">__name__</span><span class="p">)</span>
+<span class="n">api</span> <span class="o">=</span> <span class="n">Api</span><span class="p">(</span><span class="n">bp</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">app.api.v1</span> <span class="kn">import</span> <span class="n">views</span>
+</code></pre></div></div>
+
+<p>Here, we have created a new blueprint called catalog and initialized the Api class
+from flask restful. This instance is what we will use to create our API
+routes. We have also imported a yet to be created <code class="highlighter-rouge">views.py</code> module.</p>
+
+<p>In the <code class="highlighter-rouge">__init__.py</code> file in the app package, update <code class="highlighter-rouge">create_app</code> function as
+follows.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># ... previous code
+</span>
+<span class="k">def</span> <span class="nf">create_app</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">Config</span><span class="p">):</span>
+    
+    <span class="c1"># ...
+</span>
+    <span class="kn">from</span> <span class="nn">app.api.v1</span> <span class="kn">import</span> <span class="n">bp</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">register_blueprint</span><span class="p">(</span><span class="n">bp</span><span class="p">,</span> <span class="n">url_prefix</span><span class="o">=</span><span class="s">"/api/v1"</span><span class="p">)</span>
+
+    <span class="c1"># ...
+</span></code></pre></div></div>
+
+<p>The code added above registers the blueprint we had created earlier. All the
+routes for accessing our API endpoints will be prepended with the url prefix
+defined in the blueprint registration function.</p>
+
+<p>Let’s now start building up our API endpoints.</p>
+
+<p>In the app.api.v1 package, create a <code class="highlighter-rouge">views.py</code> module and populate it with the
+following skeletal code.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app.api.v1.views
+</span>
+<span class="kn">from</span> <span class="nn">flask_restful</span> <span class="kn">import</span> <span class="n">Resource</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">api</span>
+
+<span class="k">class</span> <span class="nc">ItemAPI</span><span class="p">(</span><span class="n">Resource</span><span class="p">):</span>
+    
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="c1"># Return item data
+</span>        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># create new item
+</span>        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">patch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="p">,</span> <span class="n">field</span><span class="p">):</span>
+        <span class="c1"># make changes to an item on the given field with given id
+</span>        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="p">):</span>
+        <span class="c1"># Delete item with given ID
+</span>        <span class="k">pass</span>
+
+
+<span class="n">api</span><span class="o">.</span><span class="n">add_resource</span><span class="p">(</span>
+    <span class="n">ItemAPI</span><span class="p">,</span>
+    <span class="s">'/items'</span><span class="p">,</span>
+    <span class="s">'/items/&lt;int:id&gt;'</span>
+    <span class="s">'/items/&lt;int:id&gt;/&lt;string:field&gt;'</span>
+    <span class="p">)</span>
+</code></pre></div></div>
+
+<p>To create an API using Flask-RESTful, subclass the <strong>Resource</strong> class. Then the HTTP
+methods used to acccess the API are implemented as class methods. The routes
+are added as indicated in the last line. We can specify multiple routes as
+needed for any given API.</p>
+
+<h3 id="unit-tests-for-api-endpoints">Unit tests for API endpoints</h3>
+
+<p>Before we start building our API views, we are going to write unit tests for
+all the API endpoints. Writing unit tests lets us check that the code we write
+works the way we expect it to. Flask provides a test client that simulates
+requests to the application and returns the response data. This way, we won’t
+need to run the server.</p>
+
+<p>Also, we should test as much of our code as possible, covering every
+conceivable path through it. The higher the coverage, the more comfortable we
+can be that making changes won’t result in undesired consequences.</p>
+
+<p>We will use the <a href="https://pytest.readthedocs.io/" target="_blank">pytest</a>
+testing framework and
+<a href="https://coverage.readthedocs.io/" target="_blank">coverage</a> to test and
+measure our code.</p>
+
+<p>Install them both.</p>
+
+<p><code class="highlighter-rouge">(venv)$ pip install pytest coverage</code></p>
+
+<p>Update the <code class="highlighter-rouge">requirements.txt</code> file as follows.</p>
+
+<p><code class="highlighter-rouge">(venv)$ pip freeze | grep -v "pkg-resources" &gt; requirements.txt</code></p>
+
+<p>The <code class="highlighter-rouge">grep -v "pkg-resources"</code> excludes any name that matches this pattern.
+This will prevent installation problems during deployment and continuos
+integration later on.</p>
+
+<h4 id="setup-and-fixtures">Setup and Fixtures</h4>
+
+<p>Lets now add the configuration variables for testing. Update the <code class="highlighter-rouge">config.py</code>
+module as follows.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># config.py
+</span>
+<span class="c1"># ...
+</span>
+<span class="k">class</span> <span class="nc">TestConfig</span><span class="p">(</span><span class="n">Config</span><span class="p">):</span>
+    
+    <span class="n">TESTING</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="n">SQLALCHEMT_DATABASE_URI</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s">'TEST_DATABASE_URL'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Update the <code class="highlighter-rouge">.env</code> file with a new environment variable <code class="highlighter-rouge">TEST_DATABASE_URL</code> to
+point to a test database. This is the database we will use for all our tests.
+In my case, I have called it <strong>catalog_testdb</strong> so the database url will have
+the following format:</p>
+
+<p><code class="highlighter-rouge">postgresql+psycopg2://jp:catalog12@localhost:5432/catalog_testdb</code></p>
+
+<p>Setting TESTING to <code class="highlighter-rouge">True</code> tells Flask that the app is in test mode. Flask then
+changes some internal behavior to make testing much easier. The installed
+Flask extensions also use this flag to make testing them easier.</p>
+
+<p>With the configuration all set up, we will now start writing our test code.
+The tests will be located in the <code class="highlighter-rouge">tests.v1</code> package from the application
+root.</p>
+
+<p>Pytest has the notion of <em>fixtures</em> which are basically set up functions that
+are pre-processed before any test function is executed. The framework has made
+a provision for a configuration file of sorts which is used to collect all the
+fixtures in one place. This file should be labelled <code class="highlighter-rouge">conftest.py</code> and will be
+automatically detected by pytest.</p>
+
+<p>Lets populate this file with our fixtures to set up our tests. Create a
+<code class="highlighter-rouge">conftest.py</code> module and add the following code.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># tests.v1.conftest
+</span>
+<span class="kn">import</span> <span class="nn">pytest</span>
+<span class="kn">from</span> <span class="nn">app</span> <span class="kn">import</span> <span class="n">create_app</span><span class="p">,</span> <span class="n">db</span>
+<span class="kn">from</span> <span class="nn">config</span> <span class="kn">import</span> <span class="n">TestConfig</span>
+
+<span class="o">@</span><span class="n">pytest</span><span class="o">.</span><span class="n">fixture</span>
+<span class="k">def</span> <span class="nf">app</span><span class="p">():</span>
+    <span class="n">app</span> <span class="o">=</span> <span class="n">create_app</span><span class="p">(</span><span class="n">TestConfig</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="n">app</span><span class="o">.</span><span class="n">app_context</span><span class="p">():</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">drop_all</span><span class="p">()</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">create_all</span><span class="p">()</span>
+
+        <span class="k">yield</span> <span class="n">app</span>
+
+        <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">drop_all</span><span class="p">()</span>
+
+<span class="o">@</span><span class="n">pytest</span><span class="o">.</span><span class="n">fixture</span>
+<span class="k">def</span> <span class="nf">client</span><span class="p">(</span><span class="n">app</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">app</span><span class="o">.</span><span class="n">test_client</span><span class="p">()</span>
+
+</code></pre></div></div>
+
+<p>The <code class="highlighter-rouge">app</code> fixture will call the <code class="highlighter-rouge">create_app</code> application factory function,
+passing <code class="highlighter-rouge">TestConfig</code> to configure the application and the database for
+testing.</p>
+
+<p>The <code class="highlighter-rouge">client</code> fixture calls <code class="highlighter-rouge">app.test_client()</code> with the application object
+created by the <code class="highlighter-rouge">app</code> fixture. The tests we are going to write will use this
+client to make requests to the application without running the server.</p>
+
+<p>To use a fixture, pass the name of the fixture as a parameter to the test function. Pytest
+will then know to call the fixture function and pass the returned value to
+the test function in question.</p>
+
+<h4 id="test-modules">Test modules</h4>
+
+<p>Our test code will be in modules that begin with <code class="highlighter-rouge">test_</code> and each function in
+the modules will also start  with <code class="highlighter-rouge">test_</code>.</p>
+
+<p>We will begin by testing our models.</p>
+
+<p>Create a <code class="highlighter-rouge">test_models.py</code> module and add the following code.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">pytest</span>
+<span class="kn">from</span> <span class="nn">app.models</span> <span class="kn">import</span> <span class="n">Item</span>
+
+<span class="k">def</span> <span class="nf">test_create_items</span><span class="p">(</span><span class="n">app</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">app</span><span class="o">.</span><span class="n">app_context</span><span class="p">():</span>
+        <span class="n">item1</span> <span class="o">=</span> <span class="n">Item</span><span class="p">(</span><span class="n">itemname</span><span class="o">=</span><span class="s">'stick'</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s">'hockey stick'</span><span class="p">,</span>
+        <span class="n">category</span><span class="o">=</span><span class="s">'hockey'</span><span class="p">)</span>
+        <span class="n">item2</span> <span class="o">=</span> <span class="n">Item</span><span class="p">(</span><span class="n">itemname</span><span class="o">=</span><span class="s">'jersey'</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s">'play uniforms'</span><span class="p">,</span>
+        <span class="n">category</span><span class="o">=</span><span class="s">'soccer'</span><span class="p">)</span>
+
+        <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">item1</span><span class="p">)</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">item2</span><span class="p">)</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+        
+        <span class="n">items</span> <span class="o">=</span> <span class="n">Item</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="nb">all</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">items</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span>
+        <span class="k">assert</span> <span class="n">item1</span><span class="o">.</span><span class="n">category</span> <span class="o">==</span> <span class="s">'hockey'</span>
+        <span class="k">assert</span> <span class="n">item2</span><span class="o">.</span><span class="n">category</span> <span class="o">==</span> <span class="s">'soccer'</span>
+
+        <span class="k">assert</span> <span class="nb">bool</span><span class="p">(</span><span class="n">item1</span><span class="o">.</span><span class="n">createdby</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">False</span>
+        <span class="k">assert</span> <span class="nb">bool</span><span class="p">(</span><span class="n">item2</span><span class="o">.</span><span class="n">createdby</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">False</span>
+
+</code></pre></div></div>
+
+<p>The above module tests whether database operations work correctly. Run pytest
+and check that all the tests pass.</p>
+
+<p><code class="highlighter-rouge">(venv)$ pytest</code></p>
+
+<p>Next, we are going to add tests for each of our API endpoints.</p>
+
+<p>Create a new module called <code class="highlighter-rouge">test_views.py</code>. Add the following code to this
+module.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># tests.v1.test_views
+</span><span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">pytest</span>
+
+
+<span class="c1"># test data
+</span><span class="n">TEST_ITEM</span> <span class="o">=</span> <span class="p">{</span><span class="s">'itemname'</span><span class="p">:</span> <span class="s">'ball'</span><span class="p">,</span> <span class="s">'category'</span><span class="p">:</span> <span class="s">'soccer'</span><span class="p">,</span>
+             <span class="s">'description'</span><span class="p">:</span><span class="s">'something to kick'</span><span class="p">}</span>
+
+<span class="k">def</span> <span class="nf">test_create_item</span><span class="p">(</span><span class="n">client</span><span class="p">):</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s">'/api/v1/items'</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">TEST_ITEM</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">201</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s">'Location'</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span>
+
+    <span class="c1"># Invalid requests
+</span>    <span class="c1"># blank fields should not be in input data
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s">'/api/v1/items'</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s">'itemname'</span><span class="p">:</span> <span class="s">''</span><span class="p">,</span> <span class="s">'category'</span><span class="p">:</span> <span class="s">''</span><span class="p">,</span>
+                                                  <span class="s">'description'</span><span class="p">:</span><span class="s">''</span><span class="p">})</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">400</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s">'/api/v1/items'</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s">'itemname'</span><span class="p">:</span><span class="s">' '</span><span class="p">,</span>
+                                                  <span class="s">'category'</span><span class="p">:</span><span class="s">'   '</span><span class="p">,</span> <span class="s">'description'</span><span class="p">:</span><span class="s">'   '</span><span class="p">})</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">400</span>
+
+    <span class="c1"># Test all three fields should be present
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s">'/api/v1/items'</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s">'itemname'</span><span class="p">:</span><span class="s">'ball'</span><span class="p">,</span> <span class="s">'category'</span><span class="p">:</span><span class="s">'soccer'</span><span class="p">})</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">400</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s">'/api/v1/items'</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s">'itemname'</span><span class="p">:</span><span class="s">'jersey'</span><span class="p">})</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">400</span>
+
+
+<span class="k">def</span> <span class="nf">test_get_an_item</span><span class="p">(</span><span class="n">client</span><span class="p">):</span>
+    <span class="c1"># Add some test data to the database
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s">'/api/v1/items'</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">TEST_ITEM</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">201</span>
+
+    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">'/api/v1/items/1'</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s">'utf-8'</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s">'data'</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span>
+    <span class="n">item</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s">'data'</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+
+    <span class="c1"># test invalid requests
+</span>
+    <span class="c1"># Non-existent id
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">'/api/v1/items/99999'</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">404</span>
+    <span class="c1"># Invalid ID type - bad request
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">'/api/v1/items/item1'</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">400</span>
+
+<span class="k">def</span> <span class="nf">test_get_item_collection</span><span class="p">(</span><span class="n">client</span><span class="p">):</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">'/api/v1/items'</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s">'utf-8'</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">data</span><span class="p">[</span><span class="s">'data'</span><span class="p">]</span> <span class="c1"># Nothing yet
+</span>
+    <span class="c1"># Create some test_items
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s">'/api/v1/items'</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">TEST_ITEM</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">201</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s">'/api/v1/items'</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">TEST_ITEM</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">201</span>
+
+    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">'/api/v1/items'</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s">'utf-8'</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s">'data'</span><span class="p">])</span> <span class="o">==</span> <span class="mi">2</span>
+
+<span class="o">@</span><span class="n">pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">((</span><span class="s">'path'</span><span class="p">,</span> <span class="s">'data'</span><span class="p">,</span> <span class="s">'invalid_field'</span><span class="p">,</span> <span class="s">'invalid_id'</span><span class="p">),</span> <span class="p">(</span>
+    <span class="p">(</span><span class="s">'/api/v1/items/1/itemname'</span><span class="p">,</span>
+     <span class="p">{</span><span class="s">'itemname'</span><span class="p">:</span> <span class="s">'new-name'</span><span class="p">},</span>
+     <span class="p">{</span><span class="s">'category'</span><span class="p">:</span> <span class="s">'new-category'</span><span class="p">},</span>
+     <span class="s">'/api/v1/items/9999/itemname'</span>
+    <span class="p">),</span>
+    <span class="c1">#
+</span>    <span class="p">(</span><span class="s">'/api/v1/items/1/category'</span><span class="p">,</span>
+     <span class="p">{</span><span class="s">'category'</span><span class="p">:</span> <span class="s">'new-category'</span><span class="p">},</span>
+     <span class="p">{</span><span class="s">'itemname'</span><span class="p">:</span> <span class="s">'new-name'</span><span class="p">},</span>
+     <span class="s">'/api/v1/items/9999/category'</span>
+    <span class="p">),</span>
+    <span class="c1">#
+</span>    <span class="p">(</span><span class="s">'/api/v1/items/1/description'</span><span class="p">,</span>
+     <span class="p">{</span><span class="s">'description'</span><span class="p">:</span> <span class="s">'new-description'</span><span class="p">},</span>
+     <span class="p">{</span><span class="s">'category'</span><span class="p">:</span> <span class="s">'new-category'</span><span class="p">},</span>
+     <span class="s">'/api/v1/items/9999/description'</span>
+    <span class="p">)))</span>
+<span class="k">def</span> <span class="nf">test_patch_an_item</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">invalid_field</span><span class="p">,</span> <span class="n">invalid_id</span><span class="p">):</span>
+    <span class="s">""" Tests for patch endpoint"""</span>
+    <span class="c1"># Item does not exist
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">404</span>
+    <span class="k">assert</span> <span class="n">b</span><span class="s">'status'</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span>
+    <span class="k">assert</span> <span class="n">b</span><span class="s">'error'</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span>
+
+    <span class="c1"># create test data
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s">'/api/v1/items'</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">TEST_ITEM</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">201</span>
+
+    <span class="c1"># patch an item: success
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span>
+    <span class="n">resp_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s">'utf-8'</span><span class="p">))[</span><span class="s">'data'</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="c1"># check that the value in input data used to update the field is
+</span>    <span class="c1"># present in the json response of this request
+</span>    <span class="k">assert</span> <span class="bp">True</span> <span class="ow">in</span> <span class="p">[</span><span class="n">v</span> <span class="ow">in</span> <span class="n">resp_data</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
+
+    <span class="c1"># Non-matching fields: error
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">invalid_field</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">400</span>
+    <span class="k">assert</span> <span class="n">b</span><span class="s">'status'</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span>
+    <span class="k">assert</span> <span class="n">b</span><span class="s">'error'</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span>
+
+    <span class="c1"># Too many fields
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s">'category'</span><span class="p">:</span><span class="s">'cricket'</span><span class="p">,</span>
+                                        <span class="s">'description'</span><span class="p">:</span> <span class="s">'bowling game'</span><span class="p">})</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">400</span>
+    <span class="k">assert</span> <span class="n">b</span><span class="s">'status'</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span>
+    <span class="k">assert</span> <span class="n">b</span><span class="s">'error'</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span>
+
+    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">path</span><span class="p">,</span>
+                            <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s">'category'</span><span class="p">:</span><span class="s">'cricket'</span><span class="p">,</span>
+                                  <span class="s">'itemname'</span><span class="p">:</span> <span class="s">'bat'</span><span class="p">,</span>
+                                  <span class="s">'description'</span><span class="p">:</span> <span class="s">'blowling game'</span><span class="p">})</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">400</span>
+    <span class="k">assert</span> <span class="n">b</span><span class="s">'status'</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span>
+    <span class="k">assert</span> <span class="n">b</span><span class="s">'error'</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span>
+
+    <span class="c1"># Non-existent id
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">invalid_id</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">404</span>
+    <span class="k">assert</span> <span class="n">b</span><span class="s">'status'</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span>
+    <span class="k">assert</span> <span class="n">b</span><span class="s">'error'</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span>
+
+    <span class="c1"># invalid update field
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s">'/api/v1/items/1/product'</span><span class="p">,</span>
+                            <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">400</span>
+    <span class="k">assert</span> <span class="n">b</span><span class="s">'status'</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span>
+    <span class="k">assert</span> <span class="n">b</span><span class="s">'error'</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span>
+
+<span class="k">def</span> <span class="nf">test_delete_item</span><span class="p">(</span><span class="n">client</span><span class="p">):</span>
+    <span class="c1"># Item does not exist
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="s">'/api/v1/items/1'</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">404</span>
+
+    <span class="c1"># create test data
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s">'/api/v1/items'</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">TEST_ITEM</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">201</span>
+
+    <span class="c1"># successful delete
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="s">'/api/v1/items/1'</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s">'utf-8'</span><span class="p">))[</span><span class="s">'data'</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s">'id'</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span>
+
+    <span class="c1"># Non-existent id
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="s">'/api/v1/items/99999'</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">404</span>
+
+    <span class="c1"># Invalid id type, should be an int
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="s">'/api/v1/items/item-1'</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">400</span>
+
+
+</code></pre></div></div>
+
+<p>The code above details the tests for our endpoints. The tests are mostly
+self-explanatory.</p>
+
+<p>Each test function takes a <code class="highlighter-rouge">client</code> argument, which is matched to the  pytest 
+fixture we had defined earlier in the <code class="highlighter-rouge">conftest.py</code> module. This argument,
+rather the matching pytest fixture, is called and the return value passed to
+the test function. This returned values is the client that we then use to make
+endpoint requests in our tests. Pytest automatically accomplishes this.</p>
+
+<p>The <code class="highlighter-rouge">pytest.mark.parametrize</code> decorator used to decorate the
+<code class="highlighter-rouge">test_patch_an_item</code> function allows us to run this function more than once
+using the arguments that have been provided in the decorator. The first tuple
+specifies the name of the arguments we’ll have to use in the test function and
+the tuples that follow specify matching values for each argument. This is done
+to limit code repetition.</p>
+
+<p>Let’s now run the tests.</p>
+
+<p><code class="highlighter-rouge">(venv)$ pytest</code></p>
+
+<p>The tests should fail.</p>
+
+<p>We are now going to implement each API endpoint such that all the unit tests
+pertatining to it pass. After implementing each endpoint, run the tests and
+keep on adding to/modifying the code in question until all the relevant tests
+pass.</p>
+
+<h3 id="building-the-api-endpoints">Building the API endpoints</h3>
+
+<p>Create a module called <code class="highlighter-rouge">views.py</code> in the <code class="highlighter-rouge">app.api.v1</code> package. Add the
+following code to this module.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="s">"""
+app.api.v1.views
+~~~~~~~~~~~~~~~~~
+RESTFul API for Item model
+
+"""</span>
+
+<span class="kn">from</span> <span class="nn">flask_restful</span> <span class="kn">import</span> <span class="n">Resource</span><span class="p">,</span> <span class="n">reqparse</span><span class="p">,</span> <span class="n">url_for</span>
+<span class="kn">from</span> <span class="nn">app.models</span> <span class="kn">import</span> <span class="n">Item</span>
+<span class="kn">from</span> <span class="nn">app</span> <span class="kn">import</span> <span class="n">db</span>
+<span class="kn">from</span> <span class="nn">.common.errors</span> <span class="kn">import</span> <span class="n">raise_error</span>
+<span class="kn">from</span> <span class="nn">.common.utils</span> <span class="kn">import</span> <span class="n">valid_item_name</span><span class="p">,</span> <span class="n">valid_category</span><span class="p">,</span> <span class="n">valid_description</span>
+
+<span class="n">parser</span> <span class="o">=</span> <span class="n">reqparse</span><span class="o">.</span><span class="n">RequestParser</span><span class="p">()</span>
+<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">'itemname'</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">'item name not provided'</span><span class="p">)</span>
+<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">'category'</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">'category not provided'</span><span class="p">)</span>
+<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">'description'</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">'description not provided'</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">ItemAPI</span><span class="p">(</span><span class="n">Resource</span><span class="p">):</span>
+    
+    <span class="k">def</span> <span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># create new item
+</span>        <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+        <span class="n">item_name</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="s">'itemname'</span><span class="p">]</span>
+        <span class="n">category</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="s">'category'</span><span class="p">]</span>
+        <span class="n">description</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="s">'description'</span><span class="p">]</span>
+
+        <span class="c1"># Validate inout data
+</span>        <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_item_name</span><span class="p">(</span><span class="n">item_name</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">raise_error</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s">"Invalid item name"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_category</span><span class="p">(</span><span class="n">category</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">raise_error</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s">"Invalid category name"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_description</span><span class="p">(</span><span class="n">description</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">raise_error</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s">"Invalid description"</span><span class="p">)</span>
+
+        <span class="n">item</span> <span class="o">=</span> <span class="n">Item</span><span class="p">(</span><span class="n">itemname</span><span class="o">=</span><span class="n">item_name</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="n">category</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">)</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+        <span class="n">uri</span> <span class="o">=</span> <span class="n">url_for</span><span class="p">(</span><span class="s">'catalog.item'</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="n">item</span><span class="o">.</span><span class="nb">id</span><span class="p">,</span> <span class="n">_external</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+        <span class="n">output</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">output</span><span class="p">[</span><span class="s">'status'</span><span class="p">]</span> <span class="o">=</span> <span class="mi">201</span>
+        <span class="n">output</span><span class="p">[</span><span class="s">'message'</span><span class="p">]</span> <span class="o">=</span> <span class="s">'Created a new item'</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">serialize</span>
+        <span class="n">data</span><span class="p">[</span><span class="s">'uri'</span><span class="p">]</span> <span class="o">=</span> <span class="n">uri</span>
+        <span class="n">output</span><span class="p">[</span><span class="s">'data'</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">data</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">output</span><span class="p">,</span> <span class="mi">201</span><span class="p">,</span> <span class="p">{</span><span class="s">'Location'</span><span class="p">:</span> <span class="n">uri</span><span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="c1"># Return item data
+</span>        <span class="k">if</span> <span class="nb">id</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="c1"># Return a collection of all items
+</span>            <span class="n">all_items</span> <span class="o">=</span> <span class="n">Item</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="nb">all</span><span class="p">()</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">output</span><span class="p">[</span><span class="s">'status'</span><span class="p">]</span> <span class="o">=</span> <span class="mi">200</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">all_items</span>
+            <span class="k">if</span> <span class="n">all_items</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span><span class="o">.</span><span class="n">serialize</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">all_items</span><span class="p">]</span>
+            <span class="n">output</span><span class="p">[</span><span class="s">'data'</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
+
+            <span class="k">return</span> <span class="n">output</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">id</span><span class="o">.</span><span class="n">isnumeric</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">raise_error</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s">"Item ID should be an integer"</span><span class="p">)</span>
+        <span class="n">item_id</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
+        <span class="n">item</span> <span class="o">=</span> <span class="n">Item</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">item_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">item</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">raise_error</span><span class="p">(</span><span class="mi">404</span><span class="p">,</span> <span class="s">"Requested item does not exist"</span><span class="p">)</span>
+
+        <span class="n">output</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">output</span><span class="p">[</span><span class="s">'status'</span><span class="p">]</span> <span class="o">=</span> <span class="mi">200</span>
+        <span class="n">output</span><span class="p">[</span><span class="s">'data'</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span><span class="o">.</span><span class="n">serialize</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">output</span>
+
+    <span class="k">def</span> <span class="nf">patch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="p">,</span> <span class="n">field</span><span class="p">):</span>
+        <span class="c1"># update item with given ID
+</span>        <span class="k">if</span> <span class="ow">not</span> <span class="nb">id</span><span class="o">.</span><span class="n">isnumeric</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">raise_error</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s">"Item ID should be an integer"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">field</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s">'itemname'</span><span class="p">,</span> <span class="s">'category'</span><span class="p">,</span> <span class="s">'description'</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">raise_error</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s">"Invalid field name"</span><span class="p">)</span>
+
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">reqparse</span><span class="o">.</span><span class="n">RequestParser</span><span class="p">()</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">strict</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">error_msg</span> <span class="o">=</span> <span class="s">"Invalid input data. Only {} field should be provided"</span><span class="o">.</span><span class="nb">format</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">raise_error</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="n">error_msg</span><span class="p">)</span>
+
+        <span class="n">new_field_value</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">field</span> <span class="o">==</span> <span class="s">'itemname'</span><span class="p">:</span>
+            <span class="n">new_field_value</span> <span class="o">=</span> <span class="n">valid_item_name</span><span class="p">(</span><span class="n">new_field_value</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">field</span> <span class="o">==</span> <span class="s">'category'</span><span class="p">:</span>
+            <span class="n">new_field_value</span> <span class="o">=</span> <span class="n">valid_category</span><span class="p">(</span><span class="n">new_field_value</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">field</span> <span class="o">==</span> <span class="s">'description'</span><span class="p">:</span>
+            <span class="n">new_field_value</span> <span class="o">=</span> <span class="n">valid_description</span><span class="p">(</span><span class="n">new_field_value</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">new_field_value</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">raise_error</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s">"{} field is invalid"</span><span class="o">.</span><span class="nb">format</span><span class="p">(</span><span class="n">field</span><span class="p">))</span>
+
+        <span class="n">item_id</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
+        <span class="n">item</span> <span class="o">=</span> <span class="n">Item</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">item_id</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">item</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">raise_error</span><span class="p">(</span><span class="mi">404</span><span class="p">,</span> <span class="s">"Item does not exist"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">field</span> <span class="o">==</span> <span class="s">'itemname'</span><span class="p">:</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">itemname</span> <span class="o">=</span> <span class="n">new_field_value</span>
+        <span class="k">if</span> <span class="n">field</span> <span class="o">==</span> <span class="s">'description'</span><span class="p">:</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">new_field_value</span>
+        <span class="k">if</span> <span class="n">field</span> <span class="o">==</span> <span class="s">"category"</span><span class="p">:</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">category</span> <span class="o">=</span> <span class="n">new_field_value</span>
+
+        <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+
+        <span class="n">output</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">serialize</span>
+        <span class="n">output</span><span class="p">[</span><span class="s">'status'</span><span class="p">]</span> <span class="o">=</span> <span class="mi">200</span>
+        <span class="n">data</span><span class="p">[</span><span class="s">'message'</span><span class="p">]</span> <span class="o">=</span> <span class="s">'successfully updated item {}'</span><span class="o">.</span><span class="nb">format</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+        <span class="n">output</span><span class="p">[</span><span class="s">'data'</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">data</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">output</span>
+
+    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="p">):</span>
+        <span class="c1"># Delete item with given ID
+</span>        <span class="k">if</span> <span class="ow">not</span> <span class="nb">id</span><span class="o">.</span><span class="n">isnumeric</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">raise_error</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s">"Item ID should be an integer"</span><span class="p">)</span>
+        <span class="n">item_id</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
+        <span class="n">item</span> <span class="o">=</span> <span class="n">Item</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">item_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">item</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">raise_error</span><span class="p">(</span><span class="mi">404</span><span class="p">,</span> <span class="s">"Item does not exist"</span><span class="p">)</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+
+        <span class="n">output</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="s">'Item has been deleted'</span>
+        <span class="n">output</span><span class="p">[</span><span class="s">'status'</span><span class="p">]</span> <span class="o">=</span> <span class="mi">200</span>
+        <span class="n">output</span><span class="p">[</span><span class="s">'data'</span><span class="p">]</span> <span class="o">=</span> <span class="p">[{</span><span class="s">'id'</span><span class="p">:</span> <span class="n">item_id</span><span class="p">,</span> <span class="s">'message'</span><span class="p">:</span> <span class="n">message</span><span class="p">}]</span>
+        <span class="k">return</span> <span class="n">output</span>
+
+</code></pre></div></div>
+
+<p>The module above contains the complete code for the implementation of each
+of our endpoints. The class <code class="highlighter-rouge">ItemAPI</code> is used to enclose all the
+functionality/actions that will be performed on this resource.
+These actions are implemented as class methods that match the name of the http
+method that pertains to the action in question.</p>
+
+<p>The <code class="highlighter-rouge">post</code> method is used to implement the <strong>create item</strong> endpoint. Here, the
+reqparse object provided by <strong>Flask-Restful</strong> has been used to parse and
+collect input data into a convenient dictionary. The data is then validated
+using validation functions whose implementation we’ll see shortly.</p>
+
+<p>The return value is automatically converted to a json output. This is one of
+the advantages of using <strong>Flask-Restful</strong>.</p>
+
+<p>The <code class="highlighter-rouge">get</code> method is used to retrieve one item or a collection of items. The
+<code class="highlighter-rouge">patch</code> method is used to update a specified field supplied by the client.
+Finally, the <code class="highlighter-rouge">get</code> method is used to delete an item given an ID.</p>
+
+<p>The routes for these endpoints are defined in the <code class="highlighter-rouge">__init__.py</code> file of the
+<code class="highlighter-rouge">app.api.v1</code> package. This location provides a convenient location where all
+routes can be gathered in one place.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># __init__.py
+</span>
+<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Blueprint</span>
+<span class="kn">from</span> <span class="nn">flask_restful</span> <span class="kn">import</span> <span class="n">Api</span>
+
+<span class="n">bp</span> <span class="o">=</span> <span class="n">Blueprint</span><span class="p">(</span><span class="s">'catalog'</span><span class="p">,</span> <span class="n">__name__</span><span class="p">)</span>
+<span class="n">api</span> <span class="o">=</span> <span class="n">Api</span><span class="p">(</span><span class="n">bp</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">.views</span> <span class="kn">import</span> <span class="n">ItemAPI</span>
+
+<span class="c1"># routes for item resource
+</span><span class="n">api</span><span class="o">.</span><span class="n">add_resource</span><span class="p">(</span>
+    <span class="n">ItemAPI</span><span class="p">,</span>
+    <span class="s">'/items'</span><span class="p">,</span>
+    <span class="s">'/items/&lt;id&gt;'</span><span class="p">,</span>
+    <span class="s">'/items/&lt;id&gt;/&lt;field&gt;'</span><span class="p">,</span>
+    <span class="n">endpoint</span><span class="o">=</span><span class="s">'item'</span>
+    <span class="p">)</span>
+</code></pre></div></div>
+
+<p>A package called <code class="highlighter-rouge">common</code> has also been defined in the <code class="highlighter-rouge">app.api.v1</code> package.
+This package contains modules with helper functions for validations and custom
+error generation.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="s">"""
+app.api.v1.common.errors
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Custom error messages
+"""</span>
+
+<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">jsonify</span>
+
+<span class="k">def</span> <span class="nf">raise_error</span><span class="p">(</span><span class="n">status_code</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+    <span class="s">"""
+    Return a custom error message
+    """</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">jsonify</span><span class="p">({</span><span class="s">"status"</span><span class="p">:</span> <span class="n">status_code</span><span class="p">,</span>
+                        <span class="s">"error"</span><span class="p">:</span> <span class="n">message</span><span class="p">})</span>
+    <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">=</span> <span class="n">status_code</span>
+
+    <span class="k">return</span> <span class="n">response</span>
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="s">"""
+app.api.v1.common.utils
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+some common utility functions
+"""</span>
+
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">jsonify</span>
+
+<span class="k">def</span> <span class="nf">valid_item_name</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">name</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">name</span> <span class="k">if</span> <span class="n">name</span> <span class="k">else</span> <span class="bp">None</span>
+
+<span class="k">def</span> <span class="nf">valid_category</span><span class="p">(</span><span class="n">category</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">category</span><span class="p">:</span>
+        <span class="n">category</span> <span class="o">=</span> <span class="n">category</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">category</span> <span class="k">if</span> <span class="n">category</span> <span class="k">else</span> <span class="bp">None</span>
+
+<span class="k">def</span> <span class="nf">valid_description</span><span class="p">(</span><span class="n">description</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">description</span><span class="p">:</span>
+        <span class="n">description</span> <span class="o">=</span> <span class="n">description</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">description</span> <span class="k">if</span> <span class="n">description</span> <span class="k">else</span> <span class="bp">None</span>
+</code></pre></div></div>
+
+<p>Before running our tests, we’ll create a <code class="highlighter-rouge">setup.cfg</code> in the application
+root to specify some configuration values that will govern how the
+tests will run. This file is largely self-explanatory as shown below.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[tool:pytest]
+testpaths = tests
+
+[coverage:run]
+branch = True
+source =
+    app
+</code></pre></div></div>
+
+<p>We are now ready to run our tests. Execute the following commands.</p>
+
+<p><code class="highlighter-rouge">pytest</code></p>
+
+<p><code class="highlighter-rouge">coverage run -m pytest</code></p>
+
+<p>To view the coverage report on the terminal, run:</p>
+
+<p><code class="highlighter-rouge">coverage report</code></p>
+
+<p>Note that the above are mostly finished artifacts. In the development process,
+after writing the tests, one would generally add some code, test the
+implementaion bit by bit, add some more tests and so on until all the tests
+pass…I hope you get the picture.</p>
+
+<p>This is generally what <a href="https://code.tutsplus.com/tutorials/beginning-test-driven-development-in-python--net-30137" target="_blank">Test Driven Development</a> entails. You write tests that you expect will fail,
+make the tests pass, refactor, rinse repeat. The tests become an integral part
+of your development process, not just an annoying afterthought.</p>
+
+<p>As a last step, let’s now merge this feature branch to master.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$(venv) git add -A
+$(venv) git commit -m "Complete API endpoint implementation
+$(venv) git checkout master
+$(venv) git merge ft-api-endpoints
+$(venv) git push -u origin master
+</code></pre></div></div>
+<p>In
+<a href="/flask/python/2019/03/10/catalog-api-part3.html">part 3</a>,
+we are going to deviate a little and talk about Continuous Integration.</p>
+:ET

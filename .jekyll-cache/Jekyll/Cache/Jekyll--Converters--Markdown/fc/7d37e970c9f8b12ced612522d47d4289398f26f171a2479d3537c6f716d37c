@@ -1,0 +1,5 @@
+I"1<p>Forms are the lingua franca of getting external data from users into out
+applications. The are different from other html elements in that they naturally
+maintain state. However, we may want to keep track of the information gathered
+from forms in our JavaScript code as this may be more convenient.</p>
+:ET

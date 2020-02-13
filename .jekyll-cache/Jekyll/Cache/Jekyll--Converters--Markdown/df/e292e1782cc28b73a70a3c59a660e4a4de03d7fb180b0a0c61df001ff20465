@@ -1,0 +1,154 @@
+I"8"<p>In this part, we are going to cover how to set up Continuous Integration (CI)
+using <a href="https://travis-ci.org/">TravisCI</a></p>
+
+<p>Let’s consider this scenario.</p>
+
+<p>You want to build a new feature for your application. So you create a new
+feature branch, add the necessary tests that this feature would need to pass,
+and proceed to build the feature. Adding code and testing till you are done,
+i.e. when all the tests pass. Then you push your changes to the remote repo
+containing the project.</p>
+
+<p>Pushing the changes to the remote triggers a remote server that automatically
+builds and executes the tests on your changes. The build can either pass or
+fail. A failing build definitely means your changes cannot be incorporated
+into the main development branch, at least not just yet. You need to fix the
+offending bug and try again. A passing build means the probability of your
+changes breaking up everything is minimal. So, depending on the workflow under
+which you are working, you raise a pull request and hopefully your changes and
+brand new feature get merged into the main branch smoothly.</p>
+
+<p>You do this every time there’s a new feature to be developed. The changes you
+make/the feature you develop may be a small thing that can be done in a few
+hours or may be a major change, either way you ensure you push your changes
+as often and as early as possible, not waiting till it’s too complex or
+‘mature’ enough. Tests get run as early and as frequently as possible.
+Possible bugs get caught the moment they arise, and considering that the
+changes made are mostly bite-sized chunks, the bugs get quickly resolved.</p>
+
+<p>The scenario described above is an inkling of what agile development and
+Continuous Integration involve.</p>
+
+<p><a href="https://martinfowler.com/articles/continuousIntegration.html" target="_blank">Continuous
+Integration</a>
+or CI is the process whereby changes are automatically built and tested as
+often and as early as possible. This is very important especially when it
+comes to collaboration. It enables developers focus on their core task of
+problem solving without worrying too much about what bugs they may introduce
+to the codebase each time a change is made. It builds confidence that you are
+developing a stable software.</p>
+
+<p>We will implement CI in our project using the popular
+<a href="https://travis-ci.org/" target="_blank">TravisCI</a>. This is a Continous
+Integration service that provides external servers which automatically build
+and test your changes every time you make a commit.</p>
+
+<p>To get set, register on their <a href="https://travis-ci.org/" target="_blank">site</a>
+and follow the set up instructions to link up your github respository (I
+assume you already have a github account).</p>
+
+<p>With everything set up, we are now going to add a badge to the README file. In
+your travis account, navigate to the home page and click the badge at the top,
+the one reading <code class="highlighter-rouge">build failing</code>.</p>
+
+<p><img src="/assets/img/travis.png" alt="Travis Badge" /></p>
+
+<p>In the dialog box that appears, copy the markdown link and paste it at the top
+of your README file in your local repository. The badge is used to signal
+whether the changes you have committed passed all tests or not, without having
+to go to the TravisCI site.</p>
+
+<p>Then in your local repo, create <code class="highlighter-rouge">.travis.yml</code> file. This is the configuration
+file for travis and will be used to tell the remote CI server what commands
+to run. Populate the file with the following code.</p>
+
+<div class="language-yml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">language</span><span class="pi">:</span> <span class="s">python</span>
+<span class="na">python</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="s2">"</span><span class="s">3.5.2"</span>
+<span class="na">env</span><span class="pi">:</span>
+  <span class="na">global</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="s">TEST_DATABASE_URL="postgresql+psycopg2://jp:cavier@localhost:5432/catalog_testdb"</span>
+<span class="na">services</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="s">postgresql</span>
+<span class="na">install</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="s">pip install -r requirements.txt</span>
+<span class="na">before_script</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="s">psql -c 'create database catalog_testdb;' -U postgres</span>
+        <span class="pi">-</span> <span class="s">psql -c "create user jp with password 'cavier';" -U postgres</span>
+<span class="na">script</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="s">pytest</span>
+<span class="na">after_success</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="s">coveralls</span>
+</code></pre></div></div>
+
+<p>A <code class="highlighter-rouge">.yml</code> file uses the <strong>YAML</strong> language, a data serialization language to
+organize data. Data in a YAML file is basically organized as key-value pair, with a
+colon separating them. When more than one value is to be represenated by a
+key, each value is prepended by a dash. Indentation is used to make file more
+readable.</p>
+
+<p>The <code class="highlighter-rouge">language</code> key specifies the language(s) used by your application, in this
+case Python.The <code class="highlighter-rouge">python</code> key specifies the version of the language used. <code class="highlighter-rouge">env</code>
+is used to set environment variables. <code class="highlighter-rouge">services</code> specifies an external service
+required during running og tests.<code class="highlighter-rouge">install</code> specifies installation command for
+the app’s dependencies. <code class="highlighter-rouge">before_script</code> and <code class="highlighter-rouge">script</code> set the stage for running
+the tests. After all tests pass, the command <code class="highlighter-rouge">coveralls</code> is run to get the
+coverage report. We will cover this shortly.</p>
+
+<p>Commit this file using git.</p>
+
+<p>Code-coverage is the ying to testing’s yang. They go hand in hand. It
+represents fraction of the application’s code that get covered by the tests.
+This value is given as percentage.</p>
+
+<p>We will use coveralls to get the code-coverage. Go to
+<a href="https://coveralls.io/" target="_blank">Coveralls</a> site and create an
+account. Follow the instructions for linking it up with your github account.</p>
+
+<p>Add your repository to be tracked by coveralls.</p>
+
+<p>Make a copy of the <code class="highlighter-rouge">repo_token</code> that’s normally generated after everything is
+set up.</p>
+
+<p>Just as you did in TravisCI, click on the coveralls badge and copy the
+markdown link. Ensure it points to your main branch, for our case it’s the
+master branch. Paste the link just after the travis link in your README file.</p>
+
+<p>Coveralls also requires a configuration file. This file is called
+<code class="highlighter-rouge">.coveralls.yml</code>. Create in your application’s root and populate it as
+follows.</p>
+
+<div class="language-yml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">repo_token</span><span class="pi">:</span> <span class="s">yCt6NqkWYr5KjwLHTTeI7Ja5NxZ7Pnu2m</span>
+<span class="na">service_name</span><span class="pi">:</span> <span class="s">travis-ci</span>
+</code></pre></div></div>
+
+<p>In your local repo, run the following command.</p>
+
+<p><code class="highlighter-rouge">(venv)$ pip install python-coveralls</code></p>
+
+<p>This installs the necessary tools for obtaining the code coverage.</p>
+
+<p>Update the requirements file.</p>
+
+<p><code class="highlighter-rouge">(venv)$ pip freeze | grep -v "pkg-resources" &gt; requirements.txt</code></p>
+
+<p>Add and commit your changes.</p>
+
+<p>Push the changes to the remote repo.</p>
+
+<p><code class="highlighter-rouge">(venv)$ git push remote origin</code></p>
+
+<p>The build in TracisCI’s server should start automatically. You can
+observe the entire process from your TravisCI’s account.</p>
+
+<p>When everything proceeds as expected, the build badge in your README should
+turn to green and the coverage badge should indicate the percentage of code
+covered.</p>
+
+<p><img src="/assets/img/readme_badges.png" alt="Readme badges" /></p>
+
+<p>Next, we are going to implement <strong>authentication</strong> using <a href="https://jwt.io/introduction/" target="_blank">JSON Web
+Tokens</a>.</p>
+
+<p>Checkout <a href="/flask/python/2019/03/11/catalog-api-part4.html">part 4</a></p>
+:ET

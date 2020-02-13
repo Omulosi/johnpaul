@@ -1,0 +1,918 @@
+I"�<p>The backend of our application is now nicely set up. We have tested that all
+the API endpoints are working as expected. This section will incorporate
+authentication and authorization to our API. We will use an external package
+for this purpose that makes everything that much easy, the
+<a href="">Flask-JWT-Extended</a> extension.</p>
+
+<p>Before proceeding, let’s create and shift to a new feature branch
+for authentication.</p>
+
+<p><code class="highlighter-rouge">(venv)$ git checkout -b ft-jwt-authentication</code></p>
+
+<p>Let’ now start creating tests for the authentication endpoints.
+The specification for these endpoints is listed below.</p>
+<ul>
+  <li><code class="highlighter-rouge">POST /auth/v1/signup</code> - create a user account</li>
+  <li><code class="highlighter-rouge">POST /auth/v1/signin</code> - login a user</li>
+</ul>
+
+<p>In your <code class="highlighter-rouge">tests</code> directory, create a new file called <code class="highlighter-rouge">test_auth.py</code> and add the
+following code.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="s">"""
+tests.v1.test_auth
+~~~~~~~~~~~~~~~~~~
+
+Tests for authentication
+"""</span>
+
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">pytest</span>
+
+<span class="c1">#
+# SAMPLE INPUT DATA
+#
+</span>
+<span class="n">VALID_USER_DATA</span> <span class="o">=</span> <span class="p">{</span><span class="s">'email'</span><span class="p">:</span> <span class="s">'user@example.com'</span><span class="p">,</span> <span class="s">'password'</span><span class="p">:</span> <span class="s">'youcantguess#4'</span><span class="p">}</span>
+<span class="c1"># email should not be empty
+</span><span class="n">INVALID_USER_EMAIL_1</span> <span class="o">=</span> <span class="p">{</span><span class="s">'email'</span><span class="p">:</span> <span class="s">''</span><span class="p">,</span> <span class="s">'password'</span><span class="p">:</span> <span class="s">'youcantguess#4'</span><span class="p">}</span>
+<span class="c1"># email should not be blank
+</span><span class="n">INVALID_USER_EMAIL_2</span> <span class="o">=</span> <span class="p">{</span><span class="s">'email'</span><span class="p">:</span> <span class="s">'  '</span><span class="p">,</span> <span class="s">'password'</span><span class="p">:</span> <span class="s">'youcantguess#4'</span><span class="p">}</span>
+<span class="c1"># email should have correct format
+</span><span class="n">INVALID_USER_EMAIL_3</span> <span class="o">=</span> <span class="p">{</span><span class="s">'email'</span><span class="p">:</span> <span class="s">'example.com'</span><span class="p">,</span> <span class="s">'password'</span><span class="p">:</span> <span class="s">'youcantguess#4'</span><span class="p">}</span>
+<span class="c1"># email field should be present
+</span><span class="n">INVALID_USER_EMAIL_4</span> <span class="o">=</span> <span class="p">{</span><span class="s">'password'</span><span class="p">:</span> <span class="s">'youcantguess#4'</span><span class="p">}</span>
+
+<span class="c1"># password should not be empty
+</span><span class="n">INVALID_USER_PASSWORD_1</span> <span class="o">=</span> <span class="p">{</span><span class="s">'email'</span><span class="p">:</span> <span class="s">'user@example.com'</span><span class="p">,</span> <span class="s">'password'</span><span class="p">:</span> <span class="s">''</span><span class="p">}</span>
+<span class="c1"># password should not be blank
+</span><span class="n">INVALID_USER_PASSWORD_2</span> <span class="o">=</span> <span class="p">{</span><span class="s">'email'</span><span class="p">:</span> <span class="s">'user@example.com'</span><span class="p">,</span> <span class="s">'password'</span><span class="p">:</span> <span class="s">'  '</span><span class="p">}</span>
+<span class="c1"># password should be at least 3 characters long
+</span><span class="n">INVALID_USER_PASSWORD_3</span> <span class="o">=</span> <span class="p">{</span><span class="s">'email'</span><span class="p">:</span> <span class="s">'user@example.com'</span><span class="p">,</span> <span class="s">'password'</span><span class="p">:</span> <span class="s">'abc'</span><span class="p">}</span>
+<span class="c1"># password should include a number and a special character
+</span><span class="n">INVALID_USER_PASSWORD_4</span> <span class="o">=</span> <span class="p">{</span><span class="s">'email'</span><span class="p">:</span> <span class="s">'user@example.com'</span><span class="p">,</span> <span class="s">'password'</span><span class="p">:</span> <span class="s">'secret'</span><span class="p">}</span>
+<span class="n">INVALID_USER_PASSWORD_5</span> <span class="o">=</span> <span class="p">{</span><span class="s">'email'</span><span class="p">:</span> <span class="s">'user@example.com'</span><span class="p">,</span> <span class="s">'password'</span><span class="p">:</span> <span class="s">'93secret'</span><span class="p">}</span>
+<span class="n">INVALID_USER_PASSWORD_6</span> <span class="o">=</span> <span class="p">{</span><span class="s">'email'</span><span class="p">:</span> <span class="s">'user@example.com'</span><span class="p">,</span> <span class="s">'password'</span><span class="p">:</span> <span class="s">'#sec</span><span class="si">%</span><span class="s">ret'</span><span class="p">}</span>
+<span class="c1"># password field should be present
+</span><span class="n">INVALID_USER_PASSWORD_7</span> <span class="o">=</span> <span class="p">{</span><span class="s">'email'</span><span class="p">:</span> <span class="s">'user@example.com'</span><span class="p">,}</span>
+
+<span class="c1"># user should be unique
+</span><span class="n">USER_ALREADY_EXISTS</span> <span class="o">=</span> <span class="p">{</span><span class="s">'email'</span><span class="p">:</span> <span class="s">'user@example.com'</span><span class="p">,</span> <span class="s">'password'</span><span class="p">:</span>
+        <span class="s">'youcantguess#4'</span><span class="p">}</span>
+<span class="c1"># user should have valid credentials, if email and password both have the
+# correct format
+</span><span class="n">INVALID_USER_CREDENTIALS</span> <span class="o">=</span> <span class="p">{</span><span class="s">'email'</span><span class="p">:</span> <span class="s">'sneakyuser@example.com'</span><span class="p">,</span> <span class="s">'password'</span><span class="p">:</span>
+        <span class="s">'iamsneaky#9'</span><span class="p">}</span>
+
+<span class="o">@</span><span class="n">pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">((</span><span class="s">'path'</span><span class="p">),</span> <span class="p">(</span>
+    <span class="p">(</span><span class="s">'/api/v1/auth/signup'</span><span class="p">),</span>
+    <span class="p">(</span><span class="s">'/api/v1/auth/signin'</span><span class="p">)))</span>
+<span class="k">def</span> <span class="nf">test_authentication_with_valid_data</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">auth</span><span class="p">):</span>
+    <span class="s">"""
+    Tests for the signup and signin endpoints when valid and correctly
+    formatted data is supplied.
+
+    args:
+        - client - application client for making requests
+        - path - URI for signin/signup.
+    """</span>
+
+    <span class="k">if</span> <span class="s">'signup'</span> <span class="ow">in</span> <span class="n">path</span><span class="p">:</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">VALID_USER_DATA</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">201</span>
+    <span class="k">if</span> <span class="s">'signin'</span> <span class="ow">in</span> <span class="n">path</span><span class="p">:</span>
+        <span class="n">create_user_response</span> <span class="o">=</span> <span class="n">auth</span><span class="o">.</span><span class="n">signup</span><span class="p">(</span><span class="o">**</span><span class="n">VALID_USER_DATA</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">create_user_response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">201</span>
+        <span class="c1"># user now exists in the test database, okay to query
+</span>        <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">VALID_USER_DATA</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s">'utf-8'</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="s">'data'</span> <span class="ow">in</span> <span class="n">data</span>
+    <span class="k">assert</span> <span class="s">'access_token'</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s">'data'</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="s">'user'</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s">'data'</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="o">@</span><span class="n">pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">((</span><span class="s">'invalid_user_data'</span><span class="p">,</span> <span class="s">'message'</span><span class="p">),(</span>
+                        <span class="c1"># user signup
+</span>                        <span class="p">(</span><span class="n">INVALID_USER_EMAIL_1</span><span class="p">,</span> <span class="s">'Invalid email format'</span><span class="p">),</span>
+                        <span class="p">(</span><span class="n">INVALID_USER_EMAIL_2</span><span class="p">,</span> <span class="s">'Invalid email format'</span><span class="p">),</span>
+                        <span class="p">(</span><span class="n">INVALID_USER_EMAIL_3</span><span class="p">,</span> <span class="s">'Invalid email format'</span><span class="p">),</span>
+                        <span class="p">(</span><span class="n">INVALID_USER_EMAIL_4</span><span class="p">,</span> <span class="s">'Invalid email format'</span><span class="p">),</span>
+                        <span class="p">(</span><span class="n">INVALID_USER_PASSWORD_1</span><span class="p">,</span> <span class="s">'Invalid password. Should be'</span>
+                            <span class="s">' at least 5 characters long and include a number'</span>
+                            <span class="s">' and a special character'</span><span class="p">),</span>
+                        <span class="p">(</span><span class="n">INVALID_USER_PASSWORD_2</span><span class="p">,</span> <span class="s">'Invalid password. Should be'</span>
+                            <span class="s">' at least 5 characters long and include a number'</span>
+                            <span class="s">' and a special character'</span><span class="p">),</span>
+                        <span class="p">(</span><span class="n">INVALID_USER_PASSWORD_3</span><span class="p">,</span> <span class="s">'Invalid password. Should be'</span>
+                            <span class="s">' at least 5 characters long and include a number'</span>
+                            <span class="s">' and a special character'</span><span class="p">),</span>
+                        <span class="p">(</span><span class="n">INVALID_USER_PASSWORD_4</span><span class="p">,</span> <span class="s">'Invalid password. Should be'</span>
+                            <span class="s">' at least 5 characters long and include a number'</span>
+                            <span class="s">' and a special character'</span><span class="p">),</span>
+                        <span class="p">(</span><span class="n">INVALID_USER_PASSWORD_5</span><span class="p">,</span> <span class="s">'Invalid password. Should be'</span>
+                            <span class="s">' at least 5 characters long and include a number'</span>
+                            <span class="s">' and a special character'</span><span class="p">),</span>
+                        <span class="p">(</span><span class="n">INVALID_USER_PASSWORD_6</span><span class="p">,</span> <span class="s">'Invalid password. Should be'</span>
+                            <span class="s">' at least 5 characters long and include a number'</span>
+                            <span class="s">' and a special character'</span><span class="p">),</span>
+                        <span class="p">(</span><span class="n">INVALID_USER_PASSWORD_7</span><span class="p">,</span> <span class="s">'Invalid password. Should be'</span>
+                            <span class="s">' at least 5 characters long and include a number'</span>
+                            <span class="s">' and a special character'</span><span class="p">),</span>
+                        <span class="p">(</span><span class="n">USER_ALREADY_EXISTS</span><span class="p">,</span> <span class="s">'User already exists'</span><span class="p">),</span>
+                        <span class="p">))</span>
+<span class="k">def</span> <span class="nf">test_signup_with_invalid_data</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">auth</span><span class="p">,</span> <span class="n">invalid_user_data</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+    <span class="c1"># pre-create a user to test user already exists fucntionality
+</span>    <span class="n">auth</span><span class="o">.</span><span class="n">signup</span><span class="p">(</span><span class="o">**</span><span class="n">VALID_USER_DATA</span><span class="p">)</span>
+    <span class="c1"># Invalid signup
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s">'/api/v1/auth/signup'</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">invalid_user_data</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">400</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s">'utf-8'</span><span class="p">))</span>
+    <span class="c1"># check that response has correct format
+</span>    <span class="k">assert</span> <span class="s">'status'</span> <span class="ow">in</span> <span class="n">data</span>
+    <span class="k">assert</span> <span class="s">'error'</span> <span class="ow">in</span> <span class="n">data</span>
+    <span class="k">assert</span> <span class="n">message</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s">'error'</span><span class="p">]</span>
+
+
+<span class="o">@</span><span class="n">pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">((</span><span class="s">'invalid_user_data'</span><span class="p">,</span> <span class="s">'message'</span><span class="p">),(</span>
+                        <span class="c1"># user signin
+</span>                        <span class="p">(</span><span class="n">INVALID_USER_EMAIL_1</span><span class="p">,</span> <span class="s">'Invalid email format'</span><span class="p">),</span>
+                        <span class="p">(</span><span class="n">INVALID_USER_EMAIL_2</span><span class="p">,</span> <span class="s">'Invalid email format'</span><span class="p">),</span>
+                        <span class="p">(</span><span class="n">INVALID_USER_EMAIL_3</span><span class="p">,</span> <span class="s">'Invalid email format'</span><span class="p">),</span>
+                        <span class="p">(</span><span class="n">INVALID_USER_EMAIL_4</span><span class="p">,</span> <span class="s">'Invalid email format'</span><span class="p">),</span>
+                        <span class="p">(</span><span class="n">INVALID_USER_PASSWORD_1</span><span class="p">,</span> <span class="s">'Invalid password. Should be'</span>
+                            <span class="s">' at least 5 characters long and include a number'</span>
+                            <span class="s">' and a special character'</span><span class="p">),</span>
+                        <span class="p">(</span><span class="n">INVALID_USER_PASSWORD_2</span><span class="p">,</span> <span class="s">'Invalid password. Should be'</span>
+                            <span class="s">' at least 5 characters long and include a number'</span>
+                            <span class="s">' and a special character'</span><span class="p">),</span>
+                        <span class="p">(</span><span class="n">INVALID_USER_PASSWORD_3</span><span class="p">,</span> <span class="s">'Invalid password. Should be'</span>
+                            <span class="s">' at least 5 characters long and include a number'</span>
+                            <span class="s">' and a special character'</span><span class="p">),</span>
+                        <span class="p">(</span><span class="n">INVALID_USER_PASSWORD_4</span><span class="p">,</span> <span class="s">'Invalid password. Should be'</span>
+                            <span class="s">' at least 5 characters long and include a number'</span>
+                            <span class="s">' and a special character'</span><span class="p">),</span>
+                        <span class="p">(</span><span class="n">INVALID_USER_PASSWORD_5</span><span class="p">,</span> <span class="s">'Invalid password. Should be'</span>
+                            <span class="s">' at least 5 characters long and include a number'</span>
+                            <span class="s">' and a special character'</span><span class="p">),</span>
+                        <span class="p">(</span><span class="n">INVALID_USER_PASSWORD_6</span><span class="p">,</span> <span class="s">'Invalid password. Should be'</span>
+                            <span class="s">' at least 5 characters long and include a number'</span>
+                            <span class="s">' and a special character'</span><span class="p">),</span>
+                        <span class="p">(</span><span class="n">INVALID_USER_PASSWORD_7</span><span class="p">,</span> <span class="s">'Invalid password. Should be'</span>
+                            <span class="s">' at least 5 characters long and include a number'</span>
+                            <span class="s">' and a special character'</span><span class="p">),</span>
+                        <span class="p">))</span>
+<span class="k">def</span> <span class="nf">test_signin_with_invalid_data</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">auth</span><span class="p">,</span> <span class="n">invalid_user_data</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+    <span class="c1"># create a user before proceeding
+</span>    <span class="n">auth</span><span class="o">.</span><span class="n">signup</span><span class="p">(</span><span class="o">**</span><span class="n">VALID_USER_DATA</span><span class="p">)</span>
+
+    <span class="c1"># Invalid signin
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s">'/api/v1/auth/signin'</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">invalid_user_data</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">400</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s">'utf-8'</span><span class="p">))</span>
+    <span class="c1"># check that response has correct format
+</span>    <span class="k">assert</span> <span class="s">'status'</span> <span class="ow">in</span> <span class="n">data</span>
+    <span class="k">assert</span> <span class="s">'error'</span> <span class="ow">in</span> <span class="n">data</span>
+    <span class="k">assert</span> <span class="n">message</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s">'error'</span><span class="p">]</span>
+
+<span class="k">def</span> <span class="nf">test_signin_with_invalid_credentials</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">auth</span><span class="p">):</span>
+    <span class="c1"># create a user before proceeding
+</span>    <span class="n">auth</span><span class="o">.</span><span class="n">signup</span><span class="p">(</span><span class="o">**</span><span class="n">VALID_USER_DATA</span><span class="p">)</span>
+
+    <span class="c1"># signin with invalid credentials
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s">'/api/v1/auth/signin'</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">INVALID_USER_CREDENTIALS</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">401</span>
+    <span class="k">assert</span> <span class="n">b</span><span class="s">'status'</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span>
+    <span class="k">assert</span> <span class="n">b</span><span class="s">'error'</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span>
+
+</code></pre></div></div>
+
+<p>The code above tests the <code class="highlighter-rouge">signin</code> and <code class="highlighter-rouge">signup</code> endpoints. Much of it is
+self-explanatory. Refer to <em>Part 1</em> if anything does not make sense,
+especially the <code class="highlighter-rouge">pytest.mark.parametrize</code> decorator.</p>
+
+<p>Since some test views will require that a user already exists before running
+the tests, the <code class="highlighter-rouge">conftest</code> module has been updated with the following code.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># tests.v1.conftest
+</span>
+<span class="c1"># ... previous code
+</span>
+<span class="k">class</span> <span class="nc">AuthActions</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="s">"""
+    This class provides methods for quickly creating a user, signing in the
+    user or logging out the user.
+    """</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="n">client</span>
+
+    <span class="k">def</span> <span class="nf">signup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s">'/api/v1/auth/signup'</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">login</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s">'/api/v1/auth/signin'</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">logout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s">'/api/v1/auth/logout'</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">kwargs</span><span class="p">)</span>
+
+<span class="o">@</span><span class="n">pytest</span><span class="o">.</span><span class="n">fixture</span>
+<span class="k">def</span> <span class="nf">auth</span><span class="p">(</span><span class="n">client</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">AuthActions</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
+
+</code></pre></div></div>
+
+<p>Here, we have written an <code class="highlighter-rouge">AuthActions</code> class with methods that sign up,
+sign in or log out the user. Then we have created an <code class="highlighter-rouge">auth</code> fixture which 
+we use to pass in the app client to the class. This is the client we use
+to make requests for each test.</p>
+
+<p>Then, in test functions which require a user to created or logged in before
+tests are executed, we pass in the <code class="highlighter-rouge">auth</code> fixture as an argument and use it in
+the function body to quickly perform these operations. Remember from <strong>part
+3</strong> that when a fixture is passed in to a test function, it is called and the
+returned value is what is used in the function body. In this case, the
+returned value will be an instance of the <code class="highlighter-rouge">AuthActions</code> class with a client
+for making requests already initialized.</p>
+
+<p>All this limits code repetition and streamlines the entire process.</p>
+
+<p>Run the tests.</p>
+
+<p><code class="highlighter-rouge">(venv)$ pytest</code></p>
+
+<p>All the authentication tests should fail as expected.</p>
+
+<p><strong>Flask-JWT-Extended</strong> provides support for using JSON Web Tokens (JWT) for
+protecting views. To install it, run the command below.</p>
+
+<p><code class="highlighter-rouge">(venv)$ pip install flask-jwt-extended</code></p>
+
+<p>To set up and configure <strong>Flask-JWT-Extended</strong>, add the following code
+to the <code class="highlighter-rouge">__init__.py</code> file in the <code class="highlighter-rouge">app</code> package.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/__init__.py
+</span>
+<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span>
+<span class="kn">from</span> <span class="nn">config</span> <span class="kn">import</span> <span class="n">Config</span>
+<span class="kn">from</span> <span class="nn">flask_sqlalchemy</span> <span class="kn">import</span> <span class="n">SQLAlchemy</span>
+<span class="kn">from</span> <span class="nn">flask_migrate</span> <span class="kn">import</span> <span class="n">Migrate</span>
+<span class="kn">from</span> <span class="nn">flask_bcrypt</span> <span class="kn">import</span> <span class="n">Bcrypt</span>
+<span class="kn">from</span> <span class="nn">flask_jwt_extended</span> <span class="kn">import</span> <span class="n">JWTManager</span>
+
+<span class="n">db</span> <span class="o">=</span> <span class="n">SQLAlchemy</span><span class="p">()</span>
+<span class="n">migrate</span> <span class="o">=</span> <span class="n">Migrate</span><span class="p">()</span>
+<span class="n">bcrypt</span> <span class="o">=</span> <span class="n">Bcrypt</span><span class="p">()</span>
+<span class="n">jwt</span> <span class="o">=</span> <span class="n">JWTManager</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">create_app</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">Config</span><span class="p">):</span>
+    <span class="s">"""Create the application instance"""</span>
+
+    <span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">from_object</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+
+    <span class="n">db</span><span class="o">.</span><span class="n">init_app</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+    <span class="n">migrate</span><span class="o">.</span><span class="n">init_app</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">db</span><span class="p">)</span>
+    <span class="n">bcrypt</span><span class="o">.</span><span class="n">init_app</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+    <span class="n">jwt</span><span class="o">.</span><span class="n">init_app</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+
+    <span class="kn">from</span> <span class="nn">app.api.v1</span> <span class="kn">import</span> <span class="n">bp</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">register_blueprint</span><span class="p">(</span><span class="n">bp</span><span class="p">,</span> <span class="n">url_prefix</span><span class="o">=</span><span class="s">'/api/v1'</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">app</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">models</span>
+</code></pre></div></div>
+
+<p>In the <code class="highlighter-rouge">.env</code> file, add a <code class="highlighter-rouge">SECRET_KEY</code> environment variable. One way of
+generating a hard to decipher key is by using the <code class="highlighter-rouge">os.urandom</code> function.</p>
+
+<p>Then in the config file, under the <code class="highlighter-rouge">Config</code> class, add the following line:</p>
+
+<p><code class="highlighter-rouge">JWT_SECRET_KEY = os.getenv('SECRET_KEY')</code></p>
+
+<p>In the <code class="highlighter-rouge">__init__.py</code> file of <code class="highlighter-rouge">app.api.v1</code> package, add the following endpoints
+just below the <strong>Item</strong> endpoints.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># ... previous code
+</span><span class="kn">from</span> <span class="nn">.auth</span> <span class="kn">import</span> <span class="n">SignUp</span><span class="p">,</span> <span class="n">SignIn</span>
+<span class="c1"># Authenticaion routes
+</span><span class="n">api</span><span class="o">.</span><span class="n">add_resource</span><span class="p">(</span>
+        <span class="n">SignUP</span><span class="p">,</span>
+        <span class="s">'/auth/signup'</span><span class="p">,</span>
+        <span class="p">)</span>
+
+<span class="n">api</span><span class="o">.</span><span class="n">add_resource</span><span class="p">(</span>
+        <span class="n">SignIn</span><span class="p">,</span>
+        <span class="s">'/auth/signin'</span><span class="p">,</span>
+        <span class="p">)</span>
+</code></pre></div></div>
+<p>Here, the <code class="highlighter-rouge">SignUP</code> and <code class="highlighter-rouge">SignIn</code> resources have been imported from the <code class="highlighter-rouge">auth</code>
+module that we are yet to create.</p>
+
+<p>In the <code class="highlighter-rouge">app.api.v1</code> package, create a module called <code class="highlighter-rouge">auth.py</code> and add the following
+code to it.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="s">"""
+app.api.v1.auth
+~~~~~~~~~~~~~~
+
+Authentication views
+
+"""</span>
+
+<span class="kn">from</span> <span class="nn">flask_jwt_extended</span> <span class="kn">import</span> <span class="n">create_access_token</span>
+<span class="kn">from</span> <span class="nn">flask_restful</span> <span class="kn">import</span> <span class="n">Resource</span><span class="p">,</span> <span class="n">reqparse</span>
+<span class="kn">from</span> <span class="nn">.common.utils</span> <span class="kn">import</span> <span class="p">(</span><span class="n">valid_email</span><span class="p">,</span> <span class="n">valid_password</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.common.errors</span> <span class="kn">import</span> <span class="n">raise_error</span>
+<span class="kn">from</span> <span class="nn">app.models</span> <span class="kn">import</span> <span class="n">User</span>
+<span class="kn">from</span> <span class="nn">app</span> <span class="kn">import</span> <span class="n">db</span>
+
+<span class="n">parser</span> <span class="o">=</span> <span class="n">reqparse</span><span class="o">.</span><span class="n">RequestParser</span><span class="p">()</span>
+<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">'email'</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span> 
+<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">'password'</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">SignUP</span><span class="p">(</span><span class="n">Resource</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+        <span class="n">email</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">'email'</span><span class="p">)</span> <span class="ow">or</span> <span class="s">''</span>
+        <span class="n">password</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">'password'</span><span class="p">)</span> <span class="ow">or</span> <span class="s">''</span>
+
+        <span class="c1"># validate input data
+</span>        <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_email</span><span class="p">(</span><span class="n">email</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">raise_error</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s">"Invalid email format"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_password</span><span class="p">(</span><span class="n">password</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">raise_error</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s">"Invalid password. Should be at least 5 "</span>
+                    <span class="s">"characters long and include a number and a special "</span>
+                    <span class="s">"character"</span><span class="p">)</span>
+
+        <span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">email</span><span class="o">=</span><span class="n">email</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">user</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">raise_error</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s">"User already exists"</span><span class="p">)</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="p">(</span><span class="n">email</span><span class="o">=</span><span class="n">email</span><span class="p">)</span>
+        <span class="n">user</span><span class="o">.</span><span class="n">set_password</span><span class="p">(</span><span class="n">password</span><span class="p">)</span>
+
+        <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">data</span><span class="p">[</span><span class="s">'access_token'</span><span class="p">]</span> <span class="o">=</span> <span class="n">create_access_token</span><span class="p">(</span><span class="n">identity</span><span class="o">=</span><span class="n">email</span><span class="p">)</span>
+        <span class="n">data</span><span class="p">[</span><span class="s">'user'</span><span class="p">]</span> <span class="o">=</span> <span class="n">user</span><span class="o">.</span><span class="n">serialize</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s">"status"</span><span class="p">:</span> <span class="mi">201</span><span class="p">,</span>
+                <span class="s">"data"</span><span class="p">:</span> <span class="p">[</span><span class="n">data</span><span class="p">]</span>
+                <span class="p">}</span>
+
+        <span class="k">return</span> <span class="n">response</span><span class="p">,</span> <span class="mi">201</span>
+
+<span class="k">class</span> <span class="nc">SignIn</span><span class="p">(</span><span class="n">Resource</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+        <span class="n">email</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">'email'</span><span class="p">)</span> <span class="ow">or</span> <span class="s">''</span>
+        <span class="n">password</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">'password'</span><span class="p">)</span> <span class="ow">or</span> <span class="s">''</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_email</span><span class="p">(</span><span class="n">email</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">raise_error</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s">"Invalid email format"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_password</span><span class="p">(</span><span class="n">password</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">raise_error</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s">"Invalid password. Should be at least 5 "</span>
+                    <span class="s">"characters long and include a number and a special "</span>
+                    <span class="s">"character"</span><span class="p">)</span>
+
+        <span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">email</span><span class="o">=</span><span class="n">email</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">user</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">raise_error</span><span class="p">(</span><span class="mi">401</span><span class="p">,</span> <span class="s">"Invalid email. This user does not exist"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">user</span><span class="o">.</span><span class="n">check_password</span><span class="p">(</span><span class="n">password</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">raise_error</span><span class="p">(</span><span class="mi">401</span><span class="p">,</span> <span class="s">"Wrong password"</span><span class="p">)</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">data</span><span class="p">[</span><span class="s">'access_token'</span><span class="p">]</span> <span class="o">=</span> <span class="n">create_access_token</span><span class="p">(</span><span class="n">identity</span><span class="o">=</span><span class="n">email</span><span class="p">)</span>
+        <span class="n">data</span><span class="p">[</span><span class="s">'user'</span><span class="p">]</span> <span class="o">=</span> <span class="n">user</span><span class="o">.</span><span class="n">serialize</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s">"status"</span><span class="p">:</span> <span class="mi">200</span><span class="p">,</span>
+                <span class="s">"data"</span><span class="p">:</span> <span class="p">[</span><span class="n">data</span><span class="p">]</span>
+                <span class="p">}</span>
+
+        <span class="k">return</span> <span class="n">response</span>
+</code></pre></div></div>
+
+<p>The <strong>SignUp</strong> and <strong>SignIn</strong> endpoints first validate the input data before
+proceeding with any further processing. Much of the code is completely
+self-explanatory and there isn’t much that can be added by way of further
+analysis.</p>
+
+<p>We have also added new validation functions in the <code class="highlighter-rouge">utils.py</code> module in the
+<code class="highlighter-rouge">common</code> package, namely <code class="highlighter-rouge">validate_email</code> and <code class="highlighter-rouge">validate_password</code>.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="s">"""
+app.api.v1.common.utils
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+some common utility functions
+"""</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">string</span>
+<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">jsonify</span>
+
+<span class="n">EMAIL_PATTERN</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="nb">compile</span><span class="p">(</span><span class="s">r".+@[\w]+\.[\w]"</span><span class="p">)</span>
+
+<span class="c1"># ... previous code
+</span>
+<span class="k">def</span> <span class="nf">valid_email</span><span class="p">(</span><span class="n">email</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">EMAIL_PATTERN</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">email</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">email</span>
+
+<span class="k">def</span> <span class="nf">valid_password</span><span class="p">(</span><span class="n">password</span><span class="p">):</span>
+    <span class="n">special_char_present</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="k">for</span> <span class="n">char</span> <span class="ow">in</span> <span class="n">password</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">char</span> <span class="ow">in</span> <span class="n">string</span><span class="o">.</span><span class="n">punctuation</span><span class="p">:</span>
+            <span class="n">special_char_present</span> <span class="o">=</span> <span class="n">special_char_present</span> <span class="ow">or</span> <span class="bp">True</span>
+    <span class="n">digit_present</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="k">for</span> <span class="n">char</span> <span class="ow">in</span> <span class="n">password</span><span class="p">:</span>
+        <span class="n">digit_present</span> <span class="o">=</span> <span class="n">digit_present</span> <span class="ow">or</span> <span class="n">char</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">special_char_present</span> <span class="ow">and</span> <span class="n">digit_present</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">password</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">5</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">True</span>
+</code></pre></div></div>
+
+<p>The <code class="highlighter-rouge">validate_email</code> function basically uses a regular expression to check
+that the email is of the correct format. The <code class="highlighter-rouge">validate_password</code> function uses
+manual pattern matching using strings to check that the password adheres to
+the specifications established earlier in our tests.</p>
+
+<p>Finally, let’s update our <code class="highlighter-rouge">User</code> model as follows.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="c1"># ..  previous code
+</span>
+<span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s">'users'</span>
+    
+    <span class="c1"># ... previous code
+</span>
+    <span class="o">@</span><span class="nb">property</span>
+    <span class="k">def</span> <span class="nf">serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s">'id'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="nb">id</span><span class="p">,</span>
+                <span class="s">'username'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">username</span><span class="p">,</span>
+                <span class="s">'email'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">email</span><span class="p">,</span>
+                <span class="s">'firstname'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">firstname</span><span class="p">,</span>
+                <span class="s">'lastname'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">lastname</span><span class="p">,</span>
+                <span class="s">'createdon'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">createdon</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">'</span><span class="si">%</span><span class="s">a, </span><span class="si">%</span><span class="s">d </span><span class="si">%</span><span class="s">b </span><span class="si">%</span><span class="s">Y </span><span class="si">%</span><span class="s">H:</span><span class="si">%</span><span class="s">M </span><span class="si">%</span><span class="s">p'</span><span class="p">)</span>
+                <span class="p">}</span>
+
+
+    <span class="c1"># ... next code
+</span>
+</code></pre></div></div>
+
+<p>Here, we have added a <code class="highlighter-rouge">serialize</code> method that returns the pertinent fields we
+want displayed in a JSON serializable (basically a sequence) format. The
+method has been decorated with a decorator called <code class="highlighter-rouge">property</code>. This permits us
+to call an instance of this class using the expression <code class="highlighter-rouge">user.serialize</code>
+instead of <code class="highlighter-rouge">user.serialize</code>. This is just for aethestics and personal style.</p>
+
+<p>Run the tests again.</p>
+
+<p><code class="highlighter-rouge">(venv)$ pytest</code></p>
+
+<p>The tests should now pass.</p>
+
+<p>Commit your changes to version control and push them to the remote repo.
+Ensure everything works before proceeding.</p>
+
+<h3 id="protecting-api-endpoints">Protecting API Endpoints.</h3>
+
+<p>Protecting our API endpoints is a simple matter of decorating them with the
+<code class="highlighter-rouge">jwt_required()</code> decorator supplied by <strong>Flask-JWT-Extended</strong>. To get the
+identity of a <strong>JWT</strong> in a protected endpoint, use the <code class="highlighter-rouge">get_jwt_identity()</code> 
+function.</p>
+
+<p>To protect our endpoints, we will add the <code class="highlighter-rouge">jwt_required</code> decorator to each
+one. In the <code class="highlighter-rouge">items.py</code> module, add the following code.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="c1"># ... previous code
+</span>
+<span class="kn">from</span> <span class="nn">flask_jwt_extended</span> <span class="kn">import</span> <span class="n">jwt_required</span><span class="p">,</span> <span class="n">get_jwt_identity</span>
+
+<span class="k">class</span> <span class="nc">ItemAPI</span><span class="p">(</span><span class="n">Resource</span><span class="p">):</span>
+    
+    <span class="o">@</span><span class="n">jwt_required</span>
+    <span class="k">def</span> <span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># ... code
+</span>
+    <span class="o">@</span><span class="n">jwt_required</span>
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="c1"># ... code
+</span>
+    <span class="o">@</span><span class="n">jwt_required</span>
+    <span class="k">def</span> <span class="nf">patch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="p">,</span> <span class="n">field</span><span class="p">):</span>
+        <span class="c1"># ... code
+</span>
+    <span class="o">@</span><span class="n">jwt_required</span>
+    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="p">):</span>
+        <span class="c1"># ... code
+</span>
+</code></pre></div></div>
+<p>To create custom error messages, update the <code class="highlighter-rouge">errors.py</code> in the <code class="highlighter-rouge">common</code>
+package as follows.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="s">"""
+app.api.v1.common.errors
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Custom error messages
+"""</span>
+
+<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">jsonify</span>
+<span class="kn">from</span> <span class="nn">app</span> <span class="kn">import</span> <span class="n">jwt</span>
+
+<span class="k">def</span> <span class="nf">raise_error</span><span class="p">(</span><span class="n">status_code</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+    <span class="s">"""
+    Return a custom error message
+    """</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">jsonify</span><span class="p">({</span><span class="s">"status"</span><span class="p">:</span> <span class="n">status_code</span><span class="p">,</span>
+                        <span class="s">"error"</span><span class="p">:</span> <span class="n">message</span><span class="p">})</span>
+    <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">=</span> <span class="n">status_code</span>
+
+    <span class="k">return</span> <span class="n">response</span>
+
+<span class="o">@</span><span class="n">jwt</span><span class="o">.</span><span class="n">invalid_token_loader</span>
+<span class="k">def</span> <span class="nf">invalid_token_callback</span><span class="p">(</span><span class="n">error_msg</span><span class="p">):</span>
+    <span class="s">"""
+    Returns a custom 422 error message when a user
+    provides an invalid token.
+
+    error: Bad authorizaation header
+    """</span>
+    <span class="k">return</span> <span class="n">raise_error</span><span class="p">(</span><span class="mi">422</span><span class="p">,</span> <span class="n">error_msg</span><span class="p">)</span>
+
+<span class="o">@</span><span class="n">jwt</span><span class="o">.</span><span class="n">unauthorized_loader</span>
+<span class="k">def</span> <span class="nf">unauthorized_callback</span><span class="p">(</span><span class="n">error_msg</span><span class="p">):</span>
+    <span class="s">"""
+    Called when invalid credentials are provided.
+    
+    error: Unauthorized
+    """</span>
+    <span class="k">return</span> <span class="n">raise_error</span><span class="p">(</span><span class="mi">401</span><span class="p">,</span> <span class="n">error_msg</span><span class="p">)</span>
+
+<span class="o">@</span><span class="n">jwt</span><span class="o">.</span><span class="n">expired_token_loader</span>
+<span class="k">def</span> <span class="nf">expired_token_callback</span><span class="p">():</span>
+    <span class="s">"""
+    Returns a custom error message when a user provides
+    an expired token
+    """</span>
+    <span class="k">return</span> <span class="n">raise_error</span><span class="p">(</span><span class="mi">401</span><span class="p">,</span> <span class="s">"Token has expired"</span><span class="p">)</span>
+
+<span class="o">@</span><span class="n">jwt</span><span class="o">.</span><span class="n">revoked_token_loader</span>
+<span class="k">def</span> <span class="nf">revoked_token_callback</span><span class="p">():</span>
+    <span class="s">"""
+    Returns a custom error message when a user provides
+    an expired token
+    """</span>
+    <span class="k">return</span> <span class="n">raise_error</span><span class="p">(</span><span class="mi">401</span><span class="p">,</span> <span class="s">"Token has been revoked"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>These decorators are provided by <code class="highlighter-rouge">flask-jwt-extended</code>. Whenever an error is
+raised, the appropriate callback is called and a custom error response is
+returned.</p>
+
+<p>Update the tests to incorporate authentication functionality as follows.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="c1"># tests.v1.test_items
+</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">pytest</span>
+<span class="kn">from</span> <span class="nn">.util</span> <span class="kn">import</span> <span class="n">make_token_header</span>
+
+
+<span class="c1"># test data
+</span><span class="n">TEST_ITEM</span> <span class="o">=</span> <span class="p">{</span><span class="s">'itemname'</span><span class="p">:</span> <span class="s">'ball'</span><span class="p">,</span> <span class="s">'category'</span><span class="p">:</span> <span class="s">'soccer'</span><span class="p">,</span>
+             <span class="s">'description'</span><span class="p">:</span><span class="s">'something to kick'</span><span class="p">}</span>
+
+<span class="k">def</span> <span class="nf">test_create_item</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">auth</span><span class="p">):</span>
+    <span class="c1"># No token, unauthorized error
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s">'/api/v1/items'</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">TEST_ITEM</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">401</span>
+
+    <span class="c1"># Create a user and aquire the access token
+</span>    <span class="n">auth</span><span class="o">.</span><span class="n">signup</span><span class="p">()</span>
+    <span class="n">access_token</span> <span class="o">=</span> <span class="n">auth</span><span class="o">.</span><span class="n">access_token</span>
+    <span class="n">token_header</span> <span class="o">=</span> <span class="n">make_token_header</span><span class="p">(</span><span class="n">access_token</span><span class="p">)</span>
+    <span class="n">invalid_token_header</span> <span class="o">=</span> <span class="n">make_token_header</span><span class="p">(</span><span class="n">access_token</span> <span class="o">+</span> <span class="s">'k'</span><span class="p">)</span>
+
+    <span class="c1"># Invalid token, 422 error
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s">'/api/v1/items'</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">TEST_ITEM</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">invalid_token_header</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">422</span>
+
+    <span class="c1"># use the token to access endpoint
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s">'/api/v1/items'</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">TEST_ITEM</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">token_header</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">201</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s">'Location'</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span>
+
+    <span class="c1"># Invalid requests
+</span>    <span class="c1"># blank fields should not be in input data
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s">'/api/v1/items'</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s">'itemname'</span><span class="p">:</span> <span class="s">''</span><span class="p">,</span> <span class="s">'category'</span><span class="p">:</span> <span class="s">''</span><span class="p">,</span>
+                                                  <span class="s">'description'</span><span class="p">:</span><span class="s">''</span><span class="p">},</span>
+                                                  <span class="n">headers</span><span class="o">=</span><span class="n">token_header</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">400</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s">'/api/v1/items'</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s">'itemname'</span><span class="p">:</span><span class="s">' '</span><span class="p">,</span>
+                                                  <span class="s">'category'</span><span class="p">:</span><span class="s">'   '</span><span class="p">,</span> <span class="s">'description'</span><span class="p">:</span><span class="s">'   '</span><span class="p">},</span>
+                                                  <span class="n">headers</span><span class="o">=</span><span class="n">token_header</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">400</span>
+
+    <span class="c1"># Test all three fields should be present
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s">'/api/v1/items'</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s">'itemname'</span><span class="p">:</span><span class="s">'ball'</span><span class="p">,</span> <span class="s">'category'</span><span class="p">:</span><span class="s">'soccer'</span><span class="p">},</span>
+            <span class="n">headers</span><span class="o">=</span><span class="n">token_header</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">400</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s">'/api/v1/items'</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s">'itemname'</span><span class="p">:</span><span class="s">'jersey'</span><span class="p">},</span>
+            <span class="n">headers</span><span class="o">=</span><span class="n">token_header</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">400</span>
+
+
+<span class="k">def</span> <span class="nf">test_get_an_item</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">auth</span><span class="p">):</span>
+    <span class="c1"># No token, unauthorized error
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s">'/api/v1/items'</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">TEST_ITEM</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">401</span>
+
+    <span class="c1"># Create a user and aquire the access token
+</span>    <span class="n">auth</span><span class="o">.</span><span class="n">signup</span><span class="p">()</span>
+    <span class="n">access_token</span> <span class="o">=</span> <span class="n">auth</span><span class="o">.</span><span class="n">access_token</span>
+    <span class="n">token_header</span> <span class="o">=</span> <span class="n">make_token_header</span><span class="p">(</span><span class="n">access_token</span><span class="p">)</span>
+    <span class="n">invalid_token_header</span> <span class="o">=</span> <span class="n">make_token_header</span><span class="p">(</span><span class="n">access_token</span> <span class="o">+</span> <span class="s">'k'</span><span class="p">)</span>
+
+    <span class="c1"># Invalid token
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s">'/api/v1/items'</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">TEST_ITEM</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">invalid_token_header</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">422</span>
+
+    <span class="c1"># Add some test data to the database
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s">'/api/v1/items'</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">TEST_ITEM</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">token_header</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">201</span>
+
+    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">'/api/v1/items/1'</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">token_header</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s">'utf-8'</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s">'data'</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span>
+    <span class="n">item</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s">'data'</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+
+    <span class="c1"># test invalid requests
+</span>
+    <span class="c1"># Non-existent id
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">'/api/v1/items/99999'</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">token_header</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">404</span>
+    <span class="c1"># Invalid ID type - bad request
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">'/api/v1/items/item1'</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">token_header</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">400</span>
+
+<span class="k">def</span> <span class="nf">test_get_item_collection</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">auth</span><span class="p">):</span>
+    <span class="c1"># No token, unauhorized error
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">'/api/v1/items'</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">401</span>
+
+    <span class="c1"># Create a user and aquire the access token
+</span>    <span class="n">auth</span><span class="o">.</span><span class="n">signup</span><span class="p">()</span>
+    <span class="n">access_token</span> <span class="o">=</span> <span class="n">auth</span><span class="o">.</span><span class="n">access_token</span>
+    <span class="n">token_header</span> <span class="o">=</span> <span class="n">make_token_header</span><span class="p">(</span><span class="n">access_token</span><span class="p">)</span>
+    <span class="n">invalid_token_header</span> <span class="o">=</span> <span class="n">make_token_header</span><span class="p">(</span><span class="n">access_token</span> <span class="o">+</span> <span class="s">'k'</span><span class="p">)</span>
+
+    <span class="c1"># Invalid token
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">'/api/v1/items'</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">invalid_token_header</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">422</span>
+
+    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">'/api/v1/items'</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">token_header</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s">'utf-8'</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">data</span><span class="p">[</span><span class="s">'data'</span><span class="p">]</span> <span class="c1"># Nothing yet
+</span>
+    <span class="c1"># Create some test_items
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s">'/api/v1/items'</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">TEST_ITEM</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">token_header</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">201</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s">'/api/v1/items'</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">TEST_ITEM</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">token_header</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">201</span>
+
+    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">'/api/v1/items'</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">token_header</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s">'utf-8'</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s">'data'</span><span class="p">])</span> <span class="o">==</span> <span class="mi">2</span>
+
+<span class="o">@</span><span class="n">pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">((</span><span class="s">'path'</span><span class="p">,</span> <span class="s">'data'</span><span class="p">,</span> <span class="s">'invalid_field'</span><span class="p">,</span> <span class="s">'invalid_id'</span><span class="p">),</span> <span class="p">(</span>
+    <span class="p">(</span><span class="s">'/api/v1/items/1/itemname'</span><span class="p">,</span>
+     <span class="p">{</span><span class="s">'itemname'</span><span class="p">:</span> <span class="s">'new-name'</span><span class="p">},</span>
+     <span class="p">{</span><span class="s">'category'</span><span class="p">:</span> <span class="s">'new-category'</span><span class="p">},</span>
+     <span class="s">'/api/v1/items/9999/itemname'</span>
+    <span class="p">),</span>
+    <span class="c1">#
+</span>    <span class="p">(</span><span class="s">'/api/v1/items/1/category'</span><span class="p">,</span>
+     <span class="p">{</span><span class="s">'category'</span><span class="p">:</span> <span class="s">'new-category'</span><span class="p">},</span>
+     <span class="p">{</span><span class="s">'itemname'</span><span class="p">:</span> <span class="s">'new-name'</span><span class="p">},</span>
+     <span class="s">'/api/v1/items/9999/category'</span>
+    <span class="p">),</span>
+    <span class="c1">#
+</span>    <span class="p">(</span><span class="s">'/api/v1/items/1/description'</span><span class="p">,</span>
+     <span class="p">{</span><span class="s">'description'</span><span class="p">:</span> <span class="s">'new-description'</span><span class="p">},</span>
+     <span class="p">{</span><span class="s">'category'</span><span class="p">:</span> <span class="s">'new-category'</span><span class="p">},</span>
+     <span class="s">'/api/v1/items/9999/description'</span>
+    <span class="p">)))</span>
+<span class="k">def</span> <span class="nf">test_patch_an_item</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">auth</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">invalid_field</span><span class="p">,</span> <span class="n">invalid_id</span><span class="p">):</span>
+    <span class="s">""" Tests for patch endpoint"""</span>
+    <span class="c1"># No token header, unauthorized error
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">401</span>
+
+    <span class="c1"># Create a user and aquire the access token
+</span>    <span class="n">auth</span><span class="o">.</span><span class="n">signup</span><span class="p">()</span>
+    <span class="n">access_token</span> <span class="o">=</span> <span class="n">auth</span><span class="o">.</span><span class="n">access_token</span>
+    <span class="n">token_header</span> <span class="o">=</span> <span class="n">make_token_header</span><span class="p">(</span><span class="n">access_token</span><span class="p">)</span>
+    <span class="n">invalid_token_header</span> <span class="o">=</span> <span class="n">make_token_header</span><span class="p">(</span><span class="n">access_token</span> <span class="o">+</span> <span class="s">'k'</span><span class="p">)</span>
+
+    <span class="c1"># Invalid token
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">invalid_token_header</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">422</span>
+
+    <span class="c1"># Item does not exist
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">token_header</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">404</span>
+    <span class="k">assert</span> <span class="n">b</span><span class="s">'status'</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span>
+    <span class="k">assert</span> <span class="n">b</span><span class="s">'error'</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span>
+
+    <span class="c1"># create test data
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s">'/api/v1/items'</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">TEST_ITEM</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">token_header</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">201</span>
+
+    <span class="c1"># patch an item: success
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">token_header</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span>
+    <span class="n">resp_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s">'utf-8'</span><span class="p">))[</span><span class="s">'data'</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="c1"># check that the value in input data used to update the field is
+</span>    <span class="c1"># present in the json response of this request
+</span>    <span class="k">assert</span> <span class="bp">True</span> <span class="ow">in</span> <span class="p">[</span><span class="n">v</span> <span class="ow">in</span> <span class="n">resp_data</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
+
+    <span class="c1"># Non-matching fields: error
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">invalid_field</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">token_header</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">400</span>
+    <span class="k">assert</span> <span class="n">b</span><span class="s">'status'</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span>
+    <span class="k">assert</span> <span class="n">b</span><span class="s">'error'</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span>
+
+    <span class="c1"># Too many fields
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s">'category'</span><span class="p">:</span><span class="s">'cricket'</span><span class="p">,</span>
+                                        <span class="s">'description'</span><span class="p">:</span> <span class="s">'bowling game'</span><span class="p">},</span>
+                                        <span class="n">headers</span><span class="o">=</span><span class="n">token_header</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">400</span>
+    <span class="k">assert</span> <span class="n">b</span><span class="s">'status'</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span>
+    <span class="k">assert</span> <span class="n">b</span><span class="s">'error'</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span>
+
+    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">path</span><span class="p">,</span>
+                            <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s">'category'</span><span class="p">:</span><span class="s">'cricket'</span><span class="p">,</span>
+                                  <span class="s">'itemname'</span><span class="p">:</span> <span class="s">'bat'</span><span class="p">,</span>
+                                  <span class="s">'description'</span><span class="p">:</span> <span class="s">'blowling game'</span><span class="p">},</span>
+                            <span class="n">headers</span><span class="o">=</span><span class="n">token_header</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">400</span>
+    <span class="k">assert</span> <span class="n">b</span><span class="s">'status'</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span>
+    <span class="k">assert</span> <span class="n">b</span><span class="s">'error'</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span>
+
+    <span class="c1"># Non-existent id
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">invalid_id</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">token_header</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">404</span>
+    <span class="k">assert</span> <span class="n">b</span><span class="s">'status'</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span>
+    <span class="k">assert</span> <span class="n">b</span><span class="s">'error'</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span>
+
+    <span class="c1"># invalid update field
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s">'/api/v1/items/1/product'</span><span class="p">,</span>
+                            <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">token_header</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">400</span>
+    <span class="k">assert</span> <span class="n">b</span><span class="s">'status'</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span>
+    <span class="k">assert</span> <span class="n">b</span><span class="s">'error'</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span>
+
+<span class="k">def</span> <span class="nf">test_delete_item</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">auth</span><span class="p">):</span>
+    <span class="c1"># No token, 401 error
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="s">'/api/v1/items/1'</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">401</span>
+
+    <span class="c1"># Create a user and acquire the access token
+</span>    <span class="n">auth</span><span class="o">.</span><span class="n">signup</span><span class="p">()</span>
+    <span class="n">access_token</span> <span class="o">=</span> <span class="n">auth</span><span class="o">.</span><span class="n">access_token</span>
+    <span class="n">token_header</span> <span class="o">=</span> <span class="n">make_token_header</span><span class="p">(</span><span class="n">access_token</span><span class="p">)</span>
+    <span class="n">invalid_token_header</span> <span class="o">=</span> <span class="n">make_token_header</span><span class="p">(</span><span class="n">access_token</span> <span class="o">+</span> <span class="s">'k'</span><span class="p">)</span>
+
+    <span class="c1"># Invalid token
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="s">'/api/v1/items/1'</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">invalid_token_header</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">422</span>
+
+    <span class="c1"># Item does not exist
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="s">'/api/v1/items/1'</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">token_header</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">404</span>
+
+    <span class="c1"># create test data
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s">'/api/v1/items'</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">TEST_ITEM</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">token_header</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">201</span>
+
+    <span class="c1"># successful delete
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="s">'/api/v1/items/1'</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">token_header</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s">'utf-8'</span><span class="p">))[</span><span class="s">'data'</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s">'id'</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span>
+
+    <span class="c1"># Non-existent id
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="s">'/api/v1/items/99999'</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">token_header</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">404</span>
+
+    <span class="c1"># Invalid id type, should be an int
+</span>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="s">'/api/v1/items/item-1'</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">token_header</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">400</span>
+
+</code></pre></div></div>
+<p>Note that we have added an <code class="highlighter-rouge">auth</code> fixture to each test function to compute the
+access tokens and geneate the token headers for accessing each endpoint. The
+token header is then passed to each request using the <code class="highlighter-rouge">headers</code> key.</p>
+
+<p>Appropriate error responses should be generated for the cases where the token
+header is either invalid or missing.</p>
+
+<p>The update to the <code class="highlighter-rouge">auth</code> fixture in the <code class="highlighter-rouge">conftest</code> module is shown below.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="c1"># tests.v1.conftest
+</span>
+<span class="c1"># ... previous code
+</span>
+<span class="k">class</span> <span class="nc">AuthActions</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="s">"""
+    This class provides methods for authenticating users.
+    """</span>
+
+    <span class="n">DEFAULT_USER_LOGINS</span> <span class="o">=</span> <span class="p">{</span><span class="s">'email'</span><span class="p">:</span><span class="s">'user@example.com'</span><span class="p">,</span> <span class="s">'password'</span><span class="p">:</span><span class="s">'r@78hy'</span><span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="n">client</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">access_token</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="k">def</span> <span class="nf">signup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">user_data</span> <span class="o">=</span> <span class="n">kwargs</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">user_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEFAULT_USER_LOGINS</span>
+        <span class="n">response</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s">'/api/v1/auth/signup'</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">user_data</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s">'utf-8'</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">access_token</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s">'data'</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s">'access_token'</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">response</span>
+
+    <span class="k">def</span> <span class="nf">login</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">user_data</span> <span class="o">=</span> <span class="n">kwargs</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">user_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEFAULT_USER_LOGINS</span>
+        <span class="n">response</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s">'/api/v1/auth/signin'</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">user_data</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s">'utf-8'</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">access_token</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s">'data'</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s">'access_token'</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">response</span>
+
+
+    <span class="k">def</span> <span class="nf">logout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="s">'/api/v1/auth/logout'</span><span class="p">)</span>
+
+<span class="o">@</span><span class="n">pytest</span><span class="o">.</span><span class="n">fixture</span>
+<span class="k">def</span> <span class="nf">auth</span><span class="p">(</span><span class="n">client</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">AuthActions</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
+
+</code></pre></div></div>
+<p>The <code class="highlighter-rouge">auth</code> fixture is initialized by passing it as a parameter to the test
+functions. Then when we call <code class="highlighter-rouge">auth.signup</code>, we create a new user and a new
+access token. These are used subsequently in the rest of the tests.</p>
+
+<p>The <code class="highlighter-rouge">make_token_header</code> function is a helper function for creating a new
+header. This header is called the <code class="highlighter-rouge">Authorization</code> header. All helper functions
+for our tests will be defined in the <code class="highlighter-rouge">util</code> module in <code class="highlighter-rouge">tests.v1</code> package.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="c1"># tests.v1.util
+</span>
+<span class="k">def</span> <span class="nf">make_token_header</span><span class="p">(</span><span class="n">token</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s">'Authorization: Bearer {}'</span><span class="o">.</span><span class="nb">format</span><span class="p">(</span><span class="n">token</span><span class="p">)}</span>
+
+</code></pre></div></div>
+
+<p>Run the tests once more and ensure they all pass.</p>
+
+<p>Push the changes you have made to this branch to the remote repo.</p>
+
+<p><code class="highlighter-rouge">(venv)$ git push origin ft-jwt-authentication</code></p>
+
+<p>If everything went well, you should get a passing build.</p>
+
+<p>Note that the process we have undergone to reach here is not typical of the
+actual development process. Along the way you’d normally add to your features
+bit by bit, tweaking stuff here and there, adding new tests that you hadn’t
+thought of before but are critical nonetheless and so on and so forth
+until everything is swell. Only that you may never be actually <em>done</em>. You may
+need to refactor your code to make it more readable and more efficient as needs
+arise. Development can turn out to be a very non-linear process.</p>
+
+<p>Next we are going to add functionality for blacklists and token revocation.
+Check out <a href="/flask/python/2019/03/13/catalog-api-part5.html">part 5</a>
+of this series for more.</p>
+:ET

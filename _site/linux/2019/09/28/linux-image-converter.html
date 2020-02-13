@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Converting images from the linux command line | John Paul</title><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Converting images from the linux command line | JP Mulongo’s blog</title>
+<meta name="generator" content="Jekyll v4.0.0" />
+<meta property="og:title" content="Converting images from the linux command line" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="There are times when you might have need for converting between different image formats. This is pretty easy to accomplish in Linux with the ImageMagick software utility suite. ImageMagick is the swiss-army knife of command line image manipulation tools. It’s fast, efficient and easy to use." />
+<meta property="og:description" content="There are times when you might have need for converting between different image formats. This is pretty easy to accomplish in Linux with the ImageMagick software utility suite. ImageMagick is the swiss-army knife of command line image manipulation tools. It’s fast, efficient and easy to use." />
+<link rel="canonical" href="http://localhost:4000/linux/2019/09/28/linux-image-converter.html" />
+<meta property="og:url" content="http://localhost:4000/linux/2019/09/28/linux-image-converter.html" />
+<meta property="og:site_name" content="JP Mulongo’s blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2019-09-28T10:13:36+03:00" />
+<script type="application/ld+json">
+{"description":"There are times when you might have need for converting between different image formats. This is pretty easy to accomplish in Linux with the ImageMagick software utility suite. ImageMagick is the swiss-army knife of command line image manipulation tools. It’s fast, efficient and easy to use.","headline":"Converting images from the linux command line","dateModified":"2019-09-28T10:13:36+03:00","datePublished":"2019-09-28T10:13:36+03:00","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/linux/2019/09/28/linux-image-converter.html"},"url":"http://localhost:4000/linux/2019/09/28/linux-image-converter.html","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="JP Mulongo's blog" /><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/7.0.0/normalize.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.css" integrity="sha256-46qynGAkLSFpVbEBog43gvNhfrOj+BmwXdxFgVK/Kvc=" crossorigin="anonymous" />
+
+    <link href="https://fonts.googleapis.com/css?family=Lora:400,700|Roboto+Slab:400,700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href=/assets/css/styles.css>
+
+</head>
+
+<body>
+
+  <section class="main-page">
+    <div class="sidebar">
+    <h1 class="blog-title">
+      <a href=/ title="John Paul Mulongo" rel="home">John Paul</a>
+    </h1>
+
+    <ul class="main-menu">
+      <li class="menu-item nav__link"><a href=/>Home</a></li>
+      <li class="menu-item nav__link"><a href=/blog>Blog</a></li>
+      <li class="menu-item nav__link"><a href=/#footer>Contact</a></li>
+      <li class="menu-item nav__link"><a href=/#work>Projects</a></li>
+      <li class="menu-item nav__link"><a href=/now>Now</a></li>
+    </ul>
+
+    <ul class="sidebar-social">
+        <li class="social__item">
+            <a class="social__link" href="https://twitter.com/jp_mulongo" target="_blank">
+                <i class="fab fa-twitter"></i>
+            </a>
+        </li>
+        <li class="social__item">
+            <a class="social__link" href="https://github.com/Omulosi" target="_blank">
+                <i class="fab fa-github"></i>
+            </a>
+        </li>
+    </ul>
+
+</div>
+
+
+    <div class="main-content">
+
+
+    <header class="header-nav">
+    <button class="sidebar-toggle" aria-label="toggle navigation">
+        <span class="hamburger"></span>
+    </button>
+</header>
+
+    <div class="blog-index">
+  <a href=/blog>Blog</a>
+</div>
+<div class="blog-post">
+  <article >
+    <header>
+      <h1 class="post-title">Converting images from the linux command line</h1>
+      <time class="post-date">
+        28 September 2019
+      </time>
+    </header>
+    <div class="post-content">
+  	    <p>There are times when you might have need for converting between different
+image formats. This is pretty easy to accomplish in Linux with the ImageMagick
+software utility suite. ImageMagick is the swiss-army knife of command line
+image manipulation tools. It’s fast, efficient and easy to use.</p>
+
+<p>To check whether it’s already installed, run the following command.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$which</span> convert
+</code></pre></div></div>
+
+<p>This will display the location of the convert binary, if imagemagick is
+installed. If not, install it using the following command:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$sudo</span> apt-get <span class="nb">install </span>imagemagick
+</code></pre></div></div>
+
+<h2 id="usage">Usage</h2>
+<p>To convert between different image formats, we use the <code class="highlighter-rouge">convert</code> utility. Run
+the following command.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>convert example.png example.jpg
+</code></pre></div></div>
+
+<p>This command will convert <code class="highlighter-rouge">example.png</code> to <code class="highlighter-rouge">example.jpg</code>. You can use any name
+for the output image file. The general command is as follows.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ convert input_file [options] output_file
+</code></pre></div></div>
+
+<p>You can also resize your images.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ convert example.jpg -resize 500x200 example-result.jpg
+</code></pre></div></div>
+
+<p><code class="highlighter-rouge">convert</code> will try to preserve the aspect ratio of the image.</p>
+
+<p>If you want to change the quality of your images, this is also possible.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ convert example.png -quality 90 example-new.jpg
+</code></pre></div></div>
+
+<p>You may want to do this if you have, say a large <code class="highlighter-rouge">.png</code> file that you want to
+convert to a smaller <code class="highlighter-rouge">jpg</code> file. In this case, you will reduce the quality of
+the original <code class="highlighter-rouge">png</code> file and then convert to the smaller <code class="highlighter-rouge">jpg</code> file.</p>
+
+<p>You can rotate images too.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ convert example.png -rotate 90 example.png
+</code></pre></div></div>
+
+<p><code class="highlighter-rouge">convert</code> also allows you to create <strong>GIFs</strong>. If you have several <code class="highlighter-rouge">jpg</code> files in
+some directory, you can make them into a gif using the following command.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ convert *.jpg test.gif
+</code></pre></div></div>
+
+<p><code class="highlighter-rouge">convert</code> is a nifty tool that offers a plethora of options for manipulating your
+images. We’ve barely scratched the surface, there’s still so much more that if
+offers.</p>
+
+<p>Check the <a href="https://linux.die.net/man/1/convert">convert man page</a> 
+to learn more of its features and use cases</p>
+
+  	</div>
+    <div class="post-footer">
+        <div class="page-navigation">
+            
+                <a class="prev" href="/python/2019/09/22/python-download-media.html">&laquo; Downloading Media Files in Python using the requests library</a>
+            
+            
+                <a class="next" href="/react/2020/01/06/react-context-api.html">React ContextAPI &raquo;</a>
+            
+        </div>
+    </div>
+  </article>
+</div>
+
+    </div>
+  </section>
+
+  <script src="/assets/js/index.js"></script>
+</body>
+</html>

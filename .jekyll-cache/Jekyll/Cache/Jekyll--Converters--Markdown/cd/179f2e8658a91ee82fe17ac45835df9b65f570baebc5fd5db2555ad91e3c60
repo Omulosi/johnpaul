@@ -1,0 +1,99 @@
+I"À<p>At the end of this post, you should be able to:</p>
+<ul>
+  <li>Describe what the Context API is and the problem it solves</li>
+  <li>Provide data to the component tree using a context provider</li>
+  <li>Consume data from a context object in nested components</li>
+</ul>
+
+<h2 id="what-is-the-context-api">What is the Context API</h2>
+<p>In a typical application, state is usually passed down from parent to children
+components using props. Some scenarios usually force you to pass props through intermediate
+components, which may not necessarily use the prop in question, a situation called prop drilling.
+This quickly becomes cumbersome and difficult to scale in large applications.</p>
+
+<p>Such cases arise when:</p>
+<ul>
+  <li>You have global data that is shared by many React components e.g locale preference or UI theme.</li>
+  <li>You need to pass props deeply nested elements</li>
+</ul>
+
+<p>The Context API is used to solve this problem. It provides a different way for passing
+data around components.</p>
+
+<p>Context provides a way to globally share data by doing away with the need for
+passing props through intermediate components. This is especially helpful when
+the data to be shared needs to be accessible to many components at different nesting
+levels.</p>
+
+<h2 id="using-context-api">Using Context API</h2>
+<p>Context API allows us to create what is called a <code class="highlighter-rouge">Context Object</code>.</p>
+
+<p>Creating a  <code class="highlighter-rouge">Context Object</code> is a simple as executing the following code.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="p">{</span> <span class="nx">createContext</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">react</span><span class="dl">'</span><span class="p">;</span>
+<span class="kd">const</span> <span class="nx">ContextObject</span> <span class="o">=</span> <span class="nx">createObject</span><span class="p">();</span>
+</code></pre></div></div>
+
+<p>This is all there is to creating a Context Object.</p>
+
+<p>This object provides us with two important components:</p>
+<ul>
+  <li><code class="highlighter-rouge">ContextObject.Provider</code></li>
+  <li><code class="highlighter-rouge">ContextObject.Consumer</code></li>
+</ul>
+
+<p>The <code class="highlighter-rouge">Provider</code> component accepts a single prop called <code class="highlighter-rouge">value</code>. This prop is used to provide
+data across the app.</p>
+
+<p>This is how we provide data across the app using the provider component.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">#</span> <span class="nx">prev</span> <span class="nx">code</span>
+
+<span class="o">&lt;</span><span class="nx">ContextObject</span><span class="p">.</span><span class="nx">Provider</span> <span class="nx">value</span><span class="o">=</span><span class="p">{</span><span class="nx">dataToPassDown</span><span class="p">}</span><span class="o">&gt;</span>
+	<span class="o">&lt;</span><span class="nx">NestedComponent</span> <span class="o">/&gt;</span>
+	<span class="o">&lt;</span><span class="nx">AnotherNestedComponet</span> <span class="o">/&gt;</span>
+<span class="o">&lt;</span><span class="sr">/ContextObject.Provider</span><span class="err">&gt;
+</span></code></pre></div></div>
+
+<p>Any nested component is now able to read the data passed down, no matter how deep it is in the tree.</p>
+
+<p>So, how do we access the data passed to the nested components?</p>
+
+<p>Inside the relevant component, we execute the following code.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Imports the useContext hook from react</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">useContext</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">react</span><span class="dl">'</span><span class="p">;</span>
+
+<span class="c1">// Imports the context object you have already created.</span>
+<span class="c1">// This is the object from which you'll extract the data passed</span>
+<span class="c1">// to the Provider using the value prop.</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">ContextObject</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">../contexts</span><span class="dl">'</span><span class="p">;</span>
+
+<span class="c1">// Get the data</span>
+<span class="kd">const</span> <span class="nx">myData</span> <span class="o">=</span> <span class="nx">useContext</span><span class="p">(</span><span class="nx">ContextObject</span><span class="p">);</span>
+
+<span class="c1">// Now you are ready to use the data in your component</span>
+</code></pre></div></div>
+
+<p>This method uses <a href="https://reactjs.org/docs/hooks-intro.html">React Hooks</a> to consume data
+from the context object.</p>
+
+<p>Another method for consuming data from the context object involves defining a <code class="highlighter-rouge">contextType</code>
+property in a <strong>class component</strong>.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="p">{</span> <span class="nx">ContextObject</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">../contexts</span><span class="dl">'</span><span class="p">;</span>
+
+<span class="kd">class</span> <span class="nx">NestedComponent</span> <span class="kd">extends</span> <span class="nx">React</span><span class="p">.</span><span class="nx">Component</span> <span class="p">{</span>
+  <span class="kd">static</span> <span class="nx">contextType</span> <span class="o">=</span> <span class="nx">ContextObject</span><span class="p">;</span>
+
+  <span class="kd">const</span> <span class="nx">myData</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">context</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Here, we define a <code class="highlighter-rouge">contextType</code> property on a class component and assign to it the
+<strong>Context Object</strong>.</p>
+
+<p>We then consume the data provided by the Context Objectâ€™s Provider using <code class="highlighter-rouge">this.context</code>.</p>
+
+<p>This method allows to subscribe to only a single context</p>
+:ET

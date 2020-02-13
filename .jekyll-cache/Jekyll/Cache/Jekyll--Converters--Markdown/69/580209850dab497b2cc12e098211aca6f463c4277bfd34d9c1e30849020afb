@@ -1,0 +1,109 @@
+I"Ÿ<!-- Introduction -->
+<section class="intro" id="home">
+    <h1 class="section__title section__title--intro">
+        Hi, I am <strong>John Paul Mulongo</strong>
+    </h1>
+    <p class="section__subtitle section__subtitle--intro">software dev</p>
+    <img src="/assets/img/dev-jane-01.jpg" alt="a picture of Jane Smith smiling" class="intro__img" />
+</section>
+
+<!-- My services -->
+<section class="my-services" id="services">
+    <h2 class="section__title section__title--services">What I do</h2>
+    <div class="services">
+        <div class="service">
+            <h3>Design + Development</h3>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+        </div> <!-- / service -->
+
+        <div class="service">
+            <h3>E-Commerce</h3>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+        </div> <!-- / service -->
+
+        <div class="service">
+            <h3>WordPress</h3>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+        </div> <!-- / service -->
+    </div> <!-- / services -->
+
+    <a href="#work" class="btn">My Work</a>
+</section>
+
+<!-- About me -->
+<section class="about-me" id="about">
+   <h2 class="section__title section__title--about">Who I am</h2>
+   <p class="section__subtitle section__subtitle--about">Software developer based out of Nairobi</p>
+
+   <div class="about-me__body">
+
+     <p>
+       Thanks for visiting my blog!
+     </p>
+
+    <p>
+      This blog is mostly a repository of stuff I have learnt and continue to learn in my journey
+      as a software developer. It's my own small corner on the web where I document anything I find
+      interesting. I am passionate about web development, challenging problems and hacker culture.
+    </p>
+
+    <p>
+      I built the entire site from scratch using HTML, CSS and the awesome Jekyll.
+      Jekyll is static-site generator that makes it super easy to build a static site
+      with minimal effort. All posts such as this one are written in markdown.
+      Enjoy your stay!
+    </p>
+
+   </div>
+
+   <img src="/assets/img/dev-jane-02.jpg" alt="Jane leaning against a bus" class="about-me__img" />
+</section>
+
+<!-- My Work -->
+<section class="my-work" id="work">
+    <h2 class="section__title section__title--work">My work</h2>
+    <p class="section__subtitle section__subtitle--work">A selection of my range of work</p>
+
+    <div class="portfolio">
+
+      
+
+      <a href="/projects/chat-app.html" class="portfolio__item">
+          <img src="/assets/img/portfolio-01.jpg" alt="Chat application" class="portfolio__img" />
+        </a>
+      
+
+      <a href="/projects/crwn-clothing.html" class="portfolio__item">
+          <img src="/assets/img/portfolio-02.jpg" alt="crwn-clothing" class="portfolio__img" />
+        </a>
+      
+
+      <a href="/projects/etch-a-sketch.html" class="portfolio__item">
+          <img src="/assets/img/portfolio-03.jpg" alt="etch-a-skecth" class="portfolio__img" />
+        </a>
+      
+
+      <a href="/projects/flashcards.html" class="portfolio__item">
+          <img src="/assets/img/portfolio-04.jpg" alt="quick-decks" class="portfolio__img" />
+        </a>
+      
+
+      <a href="/projects/microblog.html" class="portfolio__item">
+          <img src="/assets/img/portfolio-05.jpg" alt="microblog" class="portfolio__img" />
+        </a>
+      
+
+      <a href="/projects/my-blog.html" class="portfolio__item">
+          <img src="/assets/img/portfolio-06.jpg" alt="blog" class="portfolio__img" />
+        </a>
+      
+
+      <a href="/projects/note-taking-app.html" class="portfolio__item">
+          <img src="/assets/img/portfolio-07.jpg" alt="note-taker" class="portfolio__img" />
+        </a>
+      
+
+    </div>
+</section>
+
+:ET

@@ -1,0 +1,57 @@
+I";<p>This article assumes you are a fairly competent vim user. Vim by default is a
+very lightweight editor with minimal capabilities. That is why it has a very
+rich ecosystem meant to extend its features, using plugins.</p>
+
+<p>Plugins provide
+the extra functionality needed to make it more productive. To make this
+process as pain-free and as straightforwars as possible, <strong>plugin managers</strong>
+have been developed. These are plugins used to manage other plugins. A number
+of them exist, with the two most popular being
+<a href="https://github.com/tpope/vim-pathogen">pathogen</a> and
+<a href="https://github.com/VundleVim/Vundle.vim">vundle</a>. I will mainly focus on
+vundle bacause that is what I am most familiar with.</p>
+
+<h2 id="vundle-plugin-manager">Vundle Plugin Manager</h2>
+
+<p>Vundle automates the process of installing vim plugins. It also automatically
+carries out such tasks as tracking plugins, updating and even uninstalling
+them.</p>
+
+<p>To install vundle, refer to its 
+<a href="https://github.com/VundleVim/Vundle.vim#quick-start" target="_blank">documentation</a>.
+The instructions are pretty straightforward.</p>
+
+<p>To install a plugin, add it to the <code class="highlighter-rouge">.vimrc</code> file using the format
+<code class="highlighter-rouge">&lt;repo_name&gt;/&lt;plugin_name&gt;</code> (for plugins contained in a github repo). Use the
+template described in the vundle
+<a href="https://github.com/VundleVim/Vundle.vim#quick-start">documentation</a>. The
+<code class="highlighter-rouge">.vimrc</code> file is usually located in your home directory if you are using a
+Unix machine.</p>
+
+<p>Start your vim editor by typing <code class="highlighter-rouge">vim</code> at the command line and execute the
+following command: <code class="highlighter-rouge">:PluginInstall</code>. Vundle automatically provides this
+command for installing plugins specified in the <code class="highlighter-rouge">.vimrc</code> file. The
+installation process is automatic and if everything goes well, a message to
+the effect will be displayed. Vim will alert you in case of any error. And
+that’s all there is to it.</p>
+
+<p>When plugins get installed without a plugin manager (vundle in our case),
+everything gets sort of mixed up, making it hard to track
+different plugins. Normally when a plugin is installed, the plugin
+and all its relevant configuration files are stored in the <code class="highlighter-rouge">~/.vim</code> directory.
+It is then split into different subdirectories based on functionality.
+Additional plugins are also use this same directory hence files from different
+plugins get mixed up in different directories making it very hard to track
+them. Vundle resolves these issues.</p>
+
+<p>It does this by first creating a top-level directory called <code class="highlighter-rouge">bundle</code> in the
+<code class="highlighter-rouge">~/.vim</code> directory. It then creates a separate folder for each plugin in the
+<code class="highlighter-rouge">bundle</code> directory. Each plugin re-creates its own directory structure
+inside the directory specific to it. No more mix up. Everything gets contained
+in a modular structure that is easy to track and maintain.</p>
+
+<p>Vundle also provides some convenient interface commands for managing plugins.
+We have already looked at <code class="highlighter-rouge">:PluginInstall</code> used to install plugins. Others
+include <code class="highlighter-rouge">PluginList</code>, <code class="highlighter-rouge">PluginSearch</code>, <code class="highlighter-rouge">PluginClean</code> e.t.c. See <code class="highlighter-rouge">:h vundle</code> for
+more details.</p>
+:ET

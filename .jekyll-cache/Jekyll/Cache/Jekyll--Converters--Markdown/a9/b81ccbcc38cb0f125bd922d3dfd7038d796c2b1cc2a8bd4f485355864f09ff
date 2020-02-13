@@ -1,0 +1,111 @@
+I"�<p><strong>Pyenv</strong> is a super simple utility that makes working with different <strong>python</strong>
+versions a breeze. If you have used ruby before, then most certainly you know about
+<code class="highlighter-rouge">rbenv</code>, that swiss knife of ruby utilities that makes installing and managing
+ruby packages very easy and without too much hustle. <code class="highlighter-rouge">pyenv</code> is also along those
+lines but for the python environment. This quick guide will only cover using pyenv 
+in a linux environment.</p>
+
+<h2 id="installing-pyenv">Installing pyenv</h2>
+
+<ol>
+  <li>
+    <p>First clone the <code class="highlighter-rouge">pyenv</code> repo where you want it installed. You may want to do this
+under <code class="highlighter-rouge">$HOME/.pyenv</code>, though any other folder is still fine. It’s up to
+you. Use the command below to clone the repo into a .pyenv folder in your
+home directory.</p>
+
+    <p><code class="highlighter-rouge">git clone https://github.com/pyenv/pyenv.git ~/.pyenv</code></p>
+  </li>
+  <li>
+    <p>Define an environment variable called <strong>PYENV_ROOT</strong>. Make it point to the
+location of the pyenv repo you cloned in step one above. Then add
+<code class="highlighter-rouge">PYENV_ROOT/bin</code> to your <code class="highlighter-rouge">$PATH</code>. This will allow you to use the <code class="highlighter-rouge">pyenv</code>
+command from the command-line. Use the following commands.</p>
+
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">echo</span> <span class="s1">'export PYENV_ROOT="$HOME/.pyenv"'</span> <span class="o">&gt;&gt;</span> ~/.bashrc
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s1">'export PATH="$PYENV_ROOT/bin:$PATH"'</span> <span class="o">&gt;&gt;</span> ~/.bashrc
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Add a <code class="highlighter-rouge">pyenv init</code> command to your shell to enable shims and
+autocompletion. Shims are lightweight executables that reroute your
+commands to pyenv.</p>
+
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">echo</span> <span class="nt">-e</span> <span class="s1">'if command -v pyenv 1&gt;/dev/null 2&gt;&amp;1; then\n  eval "$(pyenv
+init -)"\nfi'</span> <span class="o">&gt;&gt;</span> ~/.bash_profile
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Restart your shell so the changes to path take effect. (Another option is
+to source your <code class="highlighter-rouge">.bashrc</code> file). Use either of the following commands:</p>
+
+    <p><code class="highlighter-rouge">$ exec "$SHELL"</code></p>
+
+    <p><code class="highlighter-rouge">$ source ~/.bashrc</code></p>
+  </li>
+</ol>
+
+<h2 id="using-pyenv-to-manage-multiple-python-versions">Using pyenv to manage multiple python versions</h2>
+
+<p>After carrying out the above steps successfully, using <code class="highlighter-rouge">pyenv</code> to manage
+multiple python verisions is easy and straightforward.</p>
+
+<p>Start by viewing all the available python versions:</p>
+
+<p><code class="highlighter-rouge">$ pyenv install -l</code></p>
+
+<p>Installing a particular python version is a breeze. For example, to instal
+python2.6.6, simple execute the following command.</p>
+
+<p><code class="highlighter-rouge">$ pyenv install 2.6.6</code></p>
+
+<p>You can view all the python versions available to pyenv as so:</p>
+
+<p><code class="highlighter-rouge">$ pyenv versions</code></p>
+
+<p>Your default python version set by the system is not changed by pyenv unlesss
+you explicitly tell it to. To check the global python version:</p>
+
+<p><code class="highlighter-rouge">$ python --version</code></p>
+
+<p>To set a new global version using pyenv:</p>
+
+<p><code class="highlighter-rouge">$ pyenv global 2.6.6</code></p>
+
+<p>Another feature of pyenv is that it allows you to install different python
+versions of python local to particular directory which is pretty cool. For
+example, say you are building a project using Python 3.6.6. Simply navigate to
+the project folder and set a local python version (3.6.6 for our case) for
+that project.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">cd </span>new_python_project/
+<span class="nv">$ </span>pyenv <span class="nb">local </span>3.6.6
+</code></pre></div></div>
+
+<p>To revert to the default python interpreter that was initially installed:</p>
+
+<p><code class="highlighter-rouge">$ pyenv local system</code></p>
+
+<p>or</p>
+
+<p><code class="highlighter-rouge">$ pyenv global system</code></p>
+
+<h2 id="uninstalling-pyenv">Uninstalling pyenv</h2>
+
+<ol>
+  <li>
+    <p>Remove the <code class="highlighter-rouge">pyenv init</code> line from your <code class="highlighter-rouge">.bashrc</code> or <code class="highlighter-rouge">.bash_profile</code> file.</p>
+  </li>
+  <li>
+    <p>Delete the root directory. This is the directory into which you cloned the
+pyenv executables from github.</p>
+
+    <p><code class="highlighter-rouge">$ rm -rf $(pyenv root)</code></p>
+  </li>
+</ol>
+
+<p>That’s the long and short of it.</p>
+
+<p>Check out this <a href="">article</a> on how to use virtual environments with pyenv.</p>
+
+:ET

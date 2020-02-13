@@ -1,0 +1,49 @@
+I"�<p>In this post, we’ll look at ways that you can use to quickly and efficiently
+download media files from the internet. Media files here would include videos
+and images.</p>
+
+<p>The requests library is some sort of a swiss army knife when it comes to all
+things related to http requests in Python. I’ll use this library to show you how you can
+dowload stuff.</p>
+
+<h2 id="downloading-images">Downloading images</h2>
+
+<p>Let’s start with an example.</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">requests</span>
+
+<span class="c1"># Fake url. Use a valid url that points to an image in your examples
+</span><span class="n">img_url</span> <span class="o">=</span> <span class="s">'https://www.mycats.com/my-cat.jpeg'</span>
+<span class="n">resp</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">img_url</span><span class="p">,</span> <span class="n">allow_redirects</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s">'my-image-name.jpeg'</span><span class="p">,</span> <span class="s">'wb'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+  <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">content</span><span class="p">)</span></code></pre></figure>
+
+<p>And that’s all there is to it. Pretty neat.</p>
+
+<h2 id="downloading-videos">Downloading videos</h2>
+
+<p>Downloading videos using the requests is equally straightforward.</p>
+
+<p>Check out the example that follows.</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">video_url</span> <span class="o">=</span> <span class="s">'www.cars.com/toyoto.mp4'</span>
+
+<span class="n">resp</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">video_url</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">video_path</span><span class="p">,</span> <span class="s">'wb'</span><span class="p">)</span> <span class="k">as</span> <span class="n">in_file</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">resp</span><span class="o">.</span><span class="n">iter_content</span><span class="p">(</span><span class="n">chunk_size</span><span class="o">=</span><span class="mi">1024</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">chunk</span><span class="p">:</span>
+            <span class="n">in_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+            <span class="n">in_file</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span></code></pre></figure>
+
+<p>When downloading videos, it’s best to set the <code class="highlighter-rouge">stream</code> flag to <code class="highlighter-rouge">True</code>. This
+ensures that <code class="highlighter-rouge">requests</code> streams the content instead of downloading the entire
+thing into memory before it’s given back to you.</p>
+
+<p>We then iterate over the streamed content chunk by chunk using the <code class="highlighter-rouge">iter_content</code>
+method. This downloads the file part by part. In our case, the video will be
+downloaded in 1024 byte chunks.</p>
+
+<p>That’s all the code you’ll need to download a video, of course with some
+customizations depending on the complexity of your project.</p>
+:ET

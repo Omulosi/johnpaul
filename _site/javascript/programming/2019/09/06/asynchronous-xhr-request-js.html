@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Making Asynchronous JavaScript Requests with XHR | John Paul</title><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Making Asynchronous JavaScript Requests with XHR | JP Mulongo’s blog</title>
+<meta name="generator" content="Jekyll v4.0.0" />
+<meta property="og:title" content="Making Asynchronous JavaScript Requests with XHR" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="AJAX stands for Asynchronous JavaScript and XML. It was coined ca. 2005 by Jesse James Garret when it became a popular technique of using XMLHttpRequest to fetch data in XML format and modify the current page in place." />
+<meta property="og:description" content="AJAX stands for Asynchronous JavaScript and XML. It was coined ca. 2005 by Jesse James Garret when it became a popular technique of using XMLHttpRequest to fetch data in XML format and modify the current page in place." />
+<link rel="canonical" href="http://localhost:4000/javascript/programming/2019/09/06/asynchronous-xhr-request-js.html" />
+<meta property="og:url" content="http://localhost:4000/javascript/programming/2019/09/06/asynchronous-xhr-request-js.html" />
+<meta property="og:site_name" content="JP Mulongo’s blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2019-09-06T15:30:36+03:00" />
+<script type="application/ld+json">
+{"description":"AJAX stands for Asynchronous JavaScript and XML. It was coined ca. 2005 by Jesse James Garret when it became a popular technique of using XMLHttpRequest to fetch data in XML format and modify the current page in place.","headline":"Making Asynchronous JavaScript Requests with XHR","dateModified":"2019-09-06T15:30:36+03:00","datePublished":"2019-09-06T15:30:36+03:00","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/javascript/programming/2019/09/06/asynchronous-xhr-request-js.html"},"url":"http://localhost:4000/javascript/programming/2019/09/06/asynchronous-xhr-request-js.html","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="JP Mulongo's blog" /><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/7.0.0/normalize.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.css" integrity="sha256-46qynGAkLSFpVbEBog43gvNhfrOj+BmwXdxFgVK/Kvc=" crossorigin="anonymous" />
+
+    <link href="https://fonts.googleapis.com/css?family=Lora:400,700|Roboto+Slab:400,700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href=/assets/css/styles.css>
+
+</head>
+
+<body>
+
+  <section class="main-page">
+    <div class="sidebar">
+    <h1 class="blog-title">
+      <a href=/ title="John Paul Mulongo" rel="home">John Paul</a>
+    </h1>
+
+    <ul class="main-menu">
+      <li class="menu-item nav__link"><a href=/>Home</a></li>
+      <li class="menu-item nav__link"><a href=/blog>Blog</a></li>
+      <li class="menu-item nav__link"><a href=/#footer>Contact</a></li>
+      <li class="menu-item nav__link"><a href=/#work>Projects</a></li>
+      <li class="menu-item nav__link"><a href=/now>Now</a></li>
+    </ul>
+
+    <ul class="sidebar-social">
+        <li class="social__item">
+            <a class="social__link" href="https://twitter.com/jp_mulongo" target="_blank">
+                <i class="fab fa-twitter"></i>
+            </a>
+        </li>
+        <li class="social__item">
+            <a class="social__link" href="https://github.com/Omulosi" target="_blank">
+                <i class="fab fa-github"></i>
+            </a>
+        </li>
+    </ul>
+
+</div>
+
+
+    <div class="main-content">
+
+
+    <header class="header-nav">
+    <button class="sidebar-toggle" aria-label="toggle navigation">
+        <span class="hamburger"></span>
+    </button>
+</header>
+
+    <div class="blog-index">
+  <a href=/blog>Blog</a>
+</div>
+<div class="blog-post">
+  <article >
+    <header>
+      <h1 class="post-title">Making Asynchronous JavaScript Requests with XHR</h1>
+      <time class="post-date">
+        06 September 2019
+      </time>
+    </header>
+    <div class="post-content">
+  	    <p>AJAX stands for <strong>Asynchronous JavaScript and XML</strong>. It was coined ca. 2005 by
+<em>Jesse James Garret</em> when it became a popular technique of using XMLHttpRequest
+to fetch data in XML format and modify the current page in place.</p>
+
+<p>Nowadays, AJAX stands for the concept of requesting data asynchronously.
+Asynchronous request is when you request for some data and without pausing to
+wait for some data, just move on and do something else.</p>
+
+<p>Why was this approach important? You might ask.</p>
+
+<p>In the traditional server-rendered web apps, the client computer makes a request
+for a web page. The server then creates and returns the requested page to the
+client. Finally the client loads the new page and displays the information.</p>
+
+<p>If a user interacts the page, say to add or remove something by submitting a
+form, the cycle starts all over  again. Another request is made and the server
+returns a totally new page which the client loads and presents to the user
+again.</p>
+
+<p>XMLHttpRequest was later introduced to fix this problem. It allowed the browser
+to make http requests from JavaScript and update the current page in place
+without fetching an entire site from the server. Instead of the synchronous
+model of waiting for a whole page, the user interface would update
+asynchronously as the user kept working.</p>
+
+<h2 id="creating-an-asynchronous-request-with-xhr">Creating an Asynchronous Request with XHR</h2>
+<p>Just like how <code class="highlighter-rouge">document</code> is provided by the JavaScript engine for manipulating
+the DOM, the engine also provides a way to make asynchronous requests through an
+<code class="highlighter-rouge">XMLHttpRequest</code> object. This object is created using the XMLHttpRequest
+constructor function.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">const</span> <span class="nx">xhr</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">XMLHttpRequest</span><span class="p">();</span> <span class="c1">// Creates an XHMHttpRequest object</span>
+</code></pre></div></div>
+
+<p>When an XMLHttpReqeuest is created, nothing happens. This is just an initial
+stage. You still have to set it up with events for handling success or failure
+and finally the request has to be sent explicitly.</p>
+
+<h2 id="handling-success">Handling success</h2>
+<p>To handle a successful response, we set the <code class="highlighter-rouge">onload</code> property on the object to a
+function that’ll handle it. Check out the example below.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">function</span> <span class="nx">handleSuccess</span><span class="p">()</span> <span class="p">{</span>
+  <span class="c1">// this here, points to the XHR object. responseText is a property of the XHR</span>
+  <span class="c1">// object that contains the response/requested data</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">responseText</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="c1">// Add the onload event to the XHR object</span>
+
+<span class="kd">const</span> <span class="nx">xhr</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">XMLHttpReqeuest</span><span class="p">();</span>
+<span class="nx">xhr</span><span class="p">.</span><span class="nx">onload</span> <span class="o">=</span> <span class="nx">handleSuccess</span><span class="p">;</span>
+
+</code></pre></div></div>
+
+<h2 id="handling-errors">Handling errors</h2>
+<p>Handling errors is done similarly to handling success. Create a function that’ll
+handle the error and add it to the object as an <code class="highlighter-rouge">onerror</code> event.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">function</span> <span class="nx">handleErrors</span><span class="p">()</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="dl">'</span><span class="s1">There was an error</span><span class="dl">'</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="nx">xhr</span><span class="p">.</span><span class="nx">onerror</span> <span class="o">=</span> <span class="nx">handleError</span><span class="p">;</span>
+</code></pre></div></div>
+
+<h2 id="making-the-request">Making the request</h2>
+<p>After creating the XHR object and setting it up with the <code class="highlighter-rouge">onload</code> and <code class="highlighter-rouge">onerror</code>
+events for handling successful responses or errors respectively, we need to make
+the request.</p>
+
+<p>The request is created using the <code class="highlighter-rouge">open</code> method using the following pattern.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">xhr</span><span class="p">.</span><span class="nx">open</span><span class="p">(</span><span class="o">&lt;</span><span class="nx">Method</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">&lt;</span><span class="nx">URL</span><span class="o">&gt;</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>The method can be one of <code class="highlighter-rouge">GET</code>, <code class="highlighter-rouge">POST</code>, <code class="highlighter-rouge">PUT</code>, or <code class="highlighter-rouge">DELETE</code>.</p>
+
+<p>You can also optionally include a header with the request. This is done with the
+<code class="highlighter-rouge">setRequestHeader</code>. The <code class="highlighter-rouge">setRequestHeader()</code> method should be called after
+calling <code class="highlighter-rouge">open()</code>.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">xhr</span><span class="p">.</span><span class="nx">setRequestHeader</span><span class="p">(</span><span class="o">&lt;</span><span class="nx">header</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">&lt;</span><span class="nx">value</span><span class="o">&gt;</span><span class="p">);</span> <span class="c1">// syntax for setting request header</span>
+</code></pre></div></div>
+
+<p>Finally, send/execute the request using the <code class="highlighter-rouge">send()</code> method.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">xhr</span><span class="p">.</span><span class="nx">send</span><span class="p">();</span>
+</code></pre></div></div>
+<p>It’s not pretty, but that’s all there is to it.</p>
+
+<h2 id="summary">Summary</h2>
+<p>To send asynchronous http requests with JavaScript, follow these steps:</p>
+<ul>
+  <li>Create an XHR object with <code class="highlighter-rouge">XMLHttpReqeuest</code> constructor function.</li>
+  <li>Set the http method and url to send the request to using <code class="highlighter-rouge">open</code>.</li>
+  <li>Create a function that will run upon a successful fetch. Use it to set the
+  <code class="highlighter-rouge">onload</code> property.</li>
+  <li>Create a function that will run when an error occurs. use it to set the
+  <code class="highlighter-rouge">onerror</code> property.</li>
+  <li>Optionally set a request header using the <code class="highlighter-rouge">setRequestHeader</code> method.</li>
+  <li>Send the request using the <code class="highlighter-rouge">send</code> method.</li>
+</ul>
+
+<p>To use the response, use the <code class="highlighter-rouge">.responseText</code>. It holds the request for the async
+requests response.</p>
+
+<p>That’s quite a lot of code for sending a request. Thankfully, there are third
+party libraries that have made all this less of a pain. Like <code class="highlighter-rouge">jQuery</code> or the
+<code class="highlighter-rouge">fetch</code> API or <code class="highlighter-rouge">axios</code>. Check them out.</p>
+
+  	</div>
+    <div class="post-footer">
+        <div class="page-navigation">
+            
+                <a class="prev" href="/flask/python/2019/03/13/catalog-api-part5.html">&laquo; Building Web APIs with flask - Part 5: Blacklist and Token Revoking</a>
+            
+            
+                <a class="next" href="/jekyll/2019/09/08/adding-pagination-jekyll-site.html">Adding pagination to your Jekyll site &raquo;</a>
+            
+        </div>
+    </div>
+  </article>
+</div>
+
+    </div>
+  </section>
+
+  <script src="/assets/js/index.js"></script>
+</body>
+</html>

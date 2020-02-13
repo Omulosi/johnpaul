@@ -1,0 +1,12 @@
+I"p<h1 id="introduction-data-and-tables">Introduction: Data and Tables</h1>
+<p>How computers structure data:</p>
+<ol>
+  <li>In memory:
+    <ul>
+      <li>As simple variables such as numbers, strings, etc.</li>
+      <li>As data structures such as lists, dictionaries, objects</li>
+      <li>such data is volatile and only exists temporarily.</li>
+    </ul>
+  </li>
+</ol>
+:ET
