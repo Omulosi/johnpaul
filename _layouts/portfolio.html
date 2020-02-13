@@ -1,0 +1,31 @@
+---
+layout: default
+---
+
+<div class="blog-index">
+  <a href={{"/#work" | relative_url }}>Projects</a>
+</div>
+<div class="portfolio-page blog-post">
+  <article >
+    <header>
+      <h1 class="post-title">{{ page.title }}</h1>
+      <p class="post-date">
+        {{ page.subtitle }}
+      </p>
+    </header>
+    <div class="post-content">
+        <img src="{{ page.image_path }}" alt="" class="intro__img">
+  	    {{ content }}
+  	</div>
+    <div class="back-to-index">
+        <div class="page-navigation">
+            {% if page.previous.url %}
+                <a class="prev" href="{{page.previous.url}}">&laquo; {{page.previous.title}}</a>
+            {% endif %}
+            {% if page.next.url %}
+                <a class="next" href="{{page.next.url}}">{{page.next.title}} &raquo;</a>
+            {% endif %}
+        </div>
+    </div>
+  </article>
+</div>
