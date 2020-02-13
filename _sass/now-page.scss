@@ -1,0 +1,40 @@
+.now-page {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    margin: 0 auto 100px;
+    background: #fff;
+    padding: 2em 2.6em;
+    border: 1px solid #eaecee;
+    font-size: 1rem;
+}
+
+.now-header {
+  margin-bottom: 2em;
+}
+
+.now-header h1 {
+  font-size: 2.2em;
+  text-align: center;
+  margin: 0;
+  color: #292e31;
+  font-size: 3em;
+  line-height: 1.5;
+  font-weight: 500;
+  text-rendering: optimizeLegibility;
+}
+
+.now-header p {
+  margin-top: 2em;
+}
+
+.now-section h2 {
+  font-size: 1.6em;
+  font-weight: 500;
+  color: #292e31;
+}
+
+.now-section ul {
+
+}

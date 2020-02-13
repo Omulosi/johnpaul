@@ -1,0 +1,144 @@
+.sidebar {
+    width: 280px;
+    max-width: 20%;
+    position: fixed;
+    padding: 50px 50px;
+    top: 0;
+    left: 0;
+    font-size: .71em;
+    min-height: 100vh;
+    background: var(--clr-white);
+    border: 1px solid #eaecee;
+    transform: translateX(-100%);
+    transition: transform 250ms cubic-bezier(.5, 0, .5, 1);
+    z-index: 100;
+    margin: 0 auto;
+}
+
+.blog-title a {
+    display: inline-block;
+    padding: 9px 13px;
+    border: 3px solid var(--clr-accent);
+    font-size: 17px;
+    line-height: 150%;
+    font-weight: 700;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--clr-light);
+}
+
+.blog-title:hover a {
+  background: var(--clr-accent);
+  color: #fff;
+}
+
+.main-menu li {
+    display: block;
+    margin-top: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    position: relative;
+}
+
+main-menu>li:first-child {
+    margin-top: 0;
+}
+
+.main-menu a {
+    color: #999;
+    font-size: 1.8em;
+}
+
+.menu-item a:hover {
+  color: var(--clr-blue);
+}
+
+
+.main-menu:before,
+.main-menu:after {
+    content: "";
+    display: block;
+    width: 48px;
+    height: 2px;
+    background: #e7e7e7;
+    margin: 35px 0;
+}
+
+.sidebar-toggle {
+    padding: .5em;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    position: absolute;
+    right: 1em;
+    top: 1em;
+    z-index: 1000;
+}
+
+.sidebar-open .sidebar {
+    transform: translateX(0);
+}
+
+.sidebar-open .sidebar-toggle {
+    position: fixed;
+}
+
+
+.sidebar-open .hamburger {
+    transform: rotate(.625turn);
+}
+
+.sidebar-open .hamburger::before {
+    transform: rotate(90deg) translateX(-6px);
+}
+
+.sidebar-open .hamburger::after {
+    opacity: 0;
+}
+
+.hamburger {
+    display: block;
+    position: relative;
+}
+
+.hamburger,
+.hamburger::before,
+.hamburger::after {
+    background: var(--clr-light);
+    width: 2em;
+    height: 3px;
+    border-radius: 1em;
+    transition: transform 250ms ease-in-out;
+}
+
+
+.hamburger::before,
+.hamburger::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+}
+
+.hamburger::before { top: 6px; }
+.hamburger::after { bottom: 6px; }
+
+.sidebar-social {
+  display: flex;
+  list-style: none;
+}
+
+.sidebar-social .social__item:first-child {
+  padding-right: 1.1em;
+}
+
+.social__link i {
+  font-size: 2.5em;
+  color: var(--clr-light);
+}
+
+.social__link i:hover {
+  color: var(--clr-blue);
+}
