@@ -1,0 +1,51 @@
+---
+layout: search-page
+title: Search
+---
+<div class="tags">
+{% for category in site.categories %}
+  <div class="tag" data-tag={{category[0]}}>
+    <a href="/search?tag={{category[0]}}">{{ category[0] }}</a>
+  </div>
+{% endfor %}
+</div>
+
+<p id="search-prompt">Type in the search box below to search...</p>
+
+<div id="search-searchbar"></div>
+
+{% assign posts = paginator.posts | where_exp: "post", "post.published != 'false'" %}
+<div id="search-hits">
+  {% for post in posts %}
+   {% include blog-post.html %}
+  {% endfor %}
+</div>
+
+
+
+<!-- pagination -->
+{% if paginator.total_pages > 1 %}
+<div class="pagination" id="pagination">
+  {% if paginator.previous_page %}
+    <a href="{{ paginator.previous_page_path | prepend: site.baseurl | replace: '//', '/' }}">&laquo; Prev</a>
+  {% else %}
+    <span>&laquo; Prev</span>
+  {% endif %}
+
+  {% for page in (1..paginator.total_pages) %}
+    {% if page == paginator.page %}
+      <span class="webjeda">{{ page }}</span>
+    {% elsif page == 1 %}
+      <a href="/">{{ page }}</a>
+    {% else %}
+      <a href="{{ site.paginate_path | prepend: site.baseurl | replace: '//', '/' | replace: ':num', page }}">{{ page }}</a>
+    {% endif %}
+  {% endfor %}
+
+  {% if paginator.next_page %}
+    <a href="{{ paginator.next_page_path | prepend: site.baseurl | replace: '//', '/' }}">Next &raquo;</a>
+  {% else %}
+    <span>Next &raquo;</span>
+  {% endif %}
+</div>
+{% endif %}

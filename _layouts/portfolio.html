@@ -8,10 +8,18 @@ layout: default
 <div class="portfolio-page blog-post">
   <article >
     <header>
-      <h1 class="post-title">{{ page.title }}</h1>
+      <h1 class="post-title">{{ page.title | downcase }}</h1>
       <p class="post-date">
         {{ page.subtitle }}
       </p>
+      <div class="project-links">
+        <a class="project-links__demo" href="{{page.demo}}" target="_blank">
+          Demo
+        </a>
+        <a class="project-links__github" href="{{page.github}}" target="_blank">
+            <i class="fab fa-github"></i>
+        </a>
+      </ul>
     </header>
     <div class="post-content">
         <img src="{{ page.image_path }}" alt="" class="intro__img">
