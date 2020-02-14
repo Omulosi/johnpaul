@@ -5,11 +5,10 @@
 
     <div class="portfolio">
 
-      {% for project in site.projects %}
+      {% for project in site.projects limit:6 | sort: "z-index" %}
 
-      <a href="{{ project.url }}" class="portfolio__item">
-          <img src="{{ project.image_path }}" alt="{{ project.title }}" class="portfolio__img">
-        </a>
+      {% include project-card.html %}
+
       {% endfor %}
 
     </div>
