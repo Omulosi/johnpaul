@@ -1,5 +1,5 @@
 ---
-layout: default
+layout: blog
 title: Blog
 ---
 
@@ -9,12 +9,6 @@ title: Blog
     <a href="/search?q={{category[0]}}">{{ category[0] }}</a>
   </div>
 {% endfor %}
-</div>
-
-<div>
-  <a class="social__link" href="/search">
-      <i class="fab fas-search"></i>
-  </a>
 </div>
 
 {% assign posts = paginator.posts | where_exp: "post", "post.published != 'false'" %}
