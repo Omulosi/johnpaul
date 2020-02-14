@@ -1,8 +1,0 @@
-I"N<p>Jekyll has an extensive theme system that allows you to customize the look and feel
-of your site. Themes usually come pre-packaged with their own styles and templates.
-However, these styles can easily be overridden by your site’s content. The
-following steps provide a quick way of incorporating a custom css stylesheet to
-your site thereby extending or overriding the styles provided by the theme used
-to generate your site. I will demonstrate this process using the <code class="highlighter-rouge">minima</code>
-theme, a default theme that Jekyll uses if you do not specify one.</p>
-:ET

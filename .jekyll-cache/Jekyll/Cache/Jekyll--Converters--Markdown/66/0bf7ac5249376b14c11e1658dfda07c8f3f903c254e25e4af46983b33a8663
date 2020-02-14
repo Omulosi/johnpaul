@@ -1,7 +1,0 @@
-I"<p><strong>Pyenv</strong> is a super simple utility that makes working with different <strong>python</strong>
-versions a breeze. If you have used ruby before, then most certainly you know about
-<code class="highlighter-rouge">rbenv</code>, that swiss knife of ruby utilities that makes installing and managing
-ruby packages very easy and without too much hustle. <code class="highlighter-rouge">pyenv</code> is also along those
-lines but for the python environment. This quick guide will only cover using pyenv 
-in a linux environment.</p>
-:ET

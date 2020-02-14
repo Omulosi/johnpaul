@@ -1,5 +1,0 @@
-I"+<p>Performing logic on data within components becomes more difficult as the amount of data
-increases. Consequently, as components grow and deal with larger sets of data,
-the storing and transportation of state across the entire application increasingly
-becomes more and more cumbersome as well.</p>
-:ET
