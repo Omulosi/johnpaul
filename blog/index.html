@@ -11,6 +11,7 @@ title: Blog
 {% endfor %}
 </div>
 
+{% include search-icon.html %}
 {% assign posts = paginator.posts | where_exp: "post", "post.published != 'false'" %}
 
 <div id="blog-posts">

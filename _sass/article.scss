@@ -1,3 +1,9 @@
+#blog-posts {
+	display: flex;
+	flex-direction: column;
+}
+
+
 .blog-post article {
     width: 100%;
     margin: 0 auto 100px;
@@ -17,7 +23,7 @@
 
 .blog-post header {
   text-align: center;
-  width: 680px;
+  width: 90%;
   margin: 0 auto 45px;
 }
 
@@ -60,11 +66,16 @@
 .post-content {
     margin: 0 auto;
     color: #4c555a;
-    width: 578px;
+    max-width: 578px;
 }
 
+@media (max-width: 700px) {
+	.post-content {
+	padding: 1.5em;
+	}
+}
 .post-excerpt .post-content {
-  width: 878px;
+  width: 85%;
 }
 
 .post-content p {
@@ -119,6 +130,12 @@ article.link .content {
   justify-content: space-around;
   align-items: center;
   font-size: 1.6em;
+}
+
+@media (max-width: 600px) {
+.page-navigation {
+  font-size: 0.9em;
+}
 }
 
 .blog-index {
