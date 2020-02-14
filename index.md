@@ -10,4 +10,3 @@ intro-img-src: /img/dev-jane-01.jpg
 {% include home-page-services.html %}
 {% include home-page-about-me.html %}
 {% include home-page-my-work.html %}
-
