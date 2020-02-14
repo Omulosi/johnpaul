@@ -2,6 +2,7 @@
 layout: post
 title:  "How to Convert and Resize Images from linux CLI"
 date:   2020-01-20 10:41 +0300
+published: 'false'
 categories: [linux]
 ---
 

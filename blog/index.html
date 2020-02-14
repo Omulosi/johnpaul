@@ -13,11 +13,15 @@ title: Blog
 
 <div id="search-searchbar"></div>
 
+{% assign posts = paginator.posts | where_exp: "post", "post.published != 'false'" %}
+
 <div id="search-hits">
-  {% for post in paginator.posts %}
+  {% for post in posts %}
    {% include blog-post.html %}
   {% endfor %}
 </div>
+
+
 
 <!-- pagination -->
 {% if paginator.total_pages > 1 %}
