@@ -1,8 +1,8 @@
 <div class="portfolio__item" style="position: relative">
-  <a href="{{ project.url }}" >
-      <img src="{{ project.image_path }}" alt="{{ project.title }}" class="portfolio__img">
+  <a href="{{ project.url | relative_url }}" >
+      <img src="{{ project.image_path | relative_url }}" alt="{{ project.title }}" class="portfolio__img">
   </a>
-  <a href="{{ project.url }}" class="content">
+  <a href="{{ project.url | relative_url }}" class="content">
     <span class="title">
       {{project.title}}
     </span>
