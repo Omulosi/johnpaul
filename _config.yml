@@ -2,9 +2,7 @@
 title: JP Mulongo's blog
 email: mulongojohnpaul@gmail.com
 description: >- # this means to ignore newlines until "baseurl:"
-        This is my own corner on the web where I write all the little stuff
-        that I have learned and keep learning in my journey as a software
-        engineer.
+        A full stack software developer specializing in Python and JavaScript.
 url: "https://jpmulongo.me" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: jpmulongo
 github_username:  Omulosi
