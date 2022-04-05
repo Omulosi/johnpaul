@@ -1,0 +1,47 @@
+---
+layout: default
+title: Contact Me
+---
+
+<div id="content" class="site-content fadeInDown delay_075s">
+  <main id="main" class="site-main outer">
+    <div class="inner">
+      <h1 class="post-title">Contact Me</h1>
+      {% if site.contact_page_description %}
+      <p>{{ site.contact_page_description }}</p>
+      {{else}} {% endif %}
+      <section class="">
+        <p>
+          The best way to get in contact with me is probably via email. You can
+          reach me at a variety of places, most commonly:
+        </p>
+
+        <span style="font-weight: 600">mulongojohnpaul@gmail.com</span>
+
+        <p style="margin-top: 1.5em">You can also reach me at...</p>
+
+        <ul>
+          <li>
+            <a
+              href="https://github.com/{{ site.github }}"
+              target="_blank"
+              rel="noopener"
+            >
+              <span>GitHub</span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://www.linkedin.com/in/{{ site.linkedin }}"
+              target="_blank"
+              rel="noopener"
+            >
+              <span>Linkedin</span>
+            </a>
+          </li>
+        </ul>
+      </section>
+    </div>
+    <!-- .inner-->
+  </main>
+</div>

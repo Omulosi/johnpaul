@@ -1,0 +1,14 @@
+---
+layout: page
+title: Blog
+---
+
+<!-- Posts Index -->
+<div class="">
+  <div class="">
+    {% for post in paginator.posts%} {% include postbox.html %} {% endfor %}
+  </div>
+</div>
+<!-- Pagination-->
+{% include pagination.html %} {% if site.mailchimp_url %} {% include
+newsletter-box.html %} {% endif %}
