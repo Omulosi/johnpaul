@@ -2,7 +2,7 @@
 name: "John"
 description: "Software developer based out of Nairobi"
 meta_description: "Software developer based out of Nairobi"
-logo: "assets/images/logo.png"
+logo: "assets/images/logo-jp.png"
 favicon: "assets/images/favicon.ico"
 baseurl:
 production_url: https://jpmulongo.me/
@@ -15,7 +15,7 @@ ga_analytics: UA-136524653-1
 # Author
 author:
   name: "John Paul Mulongo"
-  image: "authorimage.jpg"
+  image: "jp-profile.jpeg"
   greetings: "Hi there!"
   description: "My name is John Paul Mulongo. I'm a software developer based in Nairobi."
   bio:
