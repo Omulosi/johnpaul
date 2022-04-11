@@ -2,7 +2,7 @@
     <header class="post-header">
         <!-- .post-meta -->
         <h2 class="post-title">
-            <a href="{{ project.url | absolute_url }}" rel="bookmark">{{ project.title }}</a>
+            <a href="{{ project.url | relative_url }}" rel="bookmark">{{ project.title }}</a>
         </h2>
     </header><!-- .post-header -->
     {% if project.featured_image_thumbnail %}
