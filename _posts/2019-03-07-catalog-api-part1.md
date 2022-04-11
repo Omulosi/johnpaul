@@ -49,14 +49,14 @@ convenient.
 Then create a virtual environment called `venv` and activate it
 (This assumes you already have `python` installed on your system).
 
-```
+```bash
 $ python3 -m venv venv
 $ source venv/bin/activate
 ```
 
 Install the flask package.
 
-```
+```bash
 $ pip install flask
 $ pip freeze > requirements.txt
 ```
@@ -78,7 +78,7 @@ main code for our API.
 
 Add and commit your changes to the repository.
 
-```
+```bash
 (venv)$ git add -A
 (venv)$ git commit -m "Initial directory structure"
 ```
@@ -123,14 +123,14 @@ wrapper to the popular
 
 Let's create a new feature branch from where we will set up our database models.
 
-```
+```bash
 (venv)$ git checkout -b ft-database-models
 ```
 
 To install Flask-SQLAlchemy, run the command below. (Ensure your virtual
 environment is activated).
 
-```
+```bash
 (venv)$ pip install flask-sqlalchemy
 ```
 
@@ -175,7 +175,7 @@ Let's make all this concrete.
 
 In the `config.py` file, add the code below.
 
-{% highlight python linenos %}
+```python
 
 # config.py
 
@@ -189,7 +189,7 @@ class Config(object):
 SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL')
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-{% endhighlight %}
+```
 
 Here, we first import the `os` module and create an absolute path to the
 directory where this file is located. We then load the configuration values to
@@ -219,7 +219,7 @@ as not to signal the application everytime a change is made to the database.
 
 To setup the database, add the following code to the `app/__init__.py` file:
 
-{% highlight python linenos %}
+```python
 
 # app\_\_init\_\_.py
 
@@ -244,7 +244,7 @@ def create_app(config=Config):
 
 from . import models
 
-{% endhighlight %}
+```
 
 This script uses the application factory pattern to create the flask app.
 
@@ -430,7 +430,7 @@ it returns `True` else `False`.
 
 Finally, apply the changes to the database.
 
-```
+```bash
 (venv)$ flask db migrate -m "password hashing in user model"
 (venv)$ flask db upgrade
 ```
@@ -445,7 +445,7 @@ python interpreter.
 
 Import the database models, db instance and create_app function.
 
-```
+```bash
 >>> from app.models import User, Item
 >>> from app import db, create_app
 ```
@@ -465,14 +465,14 @@ To learn more about application contexts, checkout this
 
 To create the application context, run the following commands.
 
-```
+```bash
 >>> app = create_app()
 >>> app.app_context().push()
 ```
 
 We are now ready to run the database commands.
 
-```
+```bash
 >>> u1 = User(username='john', email='john@example')
 >>> u1.set_password('john')
 >>> u2 = User(username='jane', email='jane@example')
@@ -504,7 +504,7 @@ We can see that our database is mostly operating as expected.
 
 Add and commit all changes to the version control. Run the following commands.
 
-```
+```bash
 $(venv)$ git add -A
 $(venv)$ git status
 $(venv)$ git commit -m "Add and configure database models"
