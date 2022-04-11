@@ -6,12 +6,12 @@
         </h2>
     </header><!-- .post-header -->
     {% if project.featured_image_thumbnail %}
-    <a class="post-thumbnail" href="{{ project.url }}">
+    <a class="post-thumbnail" href="{{ project.url | relative_url  }}">
         <img src="{% if project.featured_image_thumbnail contains ' :// ' %}{{ project.featured_image_thumbnail }}{% else %}{{ project.featured_image_thumbnail | absolute_url }}{% endif %}"
             alt="{{ project.title }}">
     </a>
     {% elsif project.featured_image %}
-    <a class="post-thumbnail" href="{{ project.url }}">
+    <a class="post-thumbnail" href="{{ project.url | relative_url }}">
         <img src="{% if project.featured_image contains ' :// ' %}{{ project.featured_image }}{% else %}{{ project.featured_image | absolute_url }}{% endif %}"
             alt="{{ project.title }}">
     </a>

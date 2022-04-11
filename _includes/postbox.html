@@ -8,12 +8,12 @@
         </h2>
     </header><!-- .post-header -->
     {% if post.featured_image_thumbnail %}
-    <a class="post-thumbnail" href="{{ post.url }}">
+    <a class="post-thumbnail" href="{{ post.url | relative_url  }}">
         <img src="{% if post.featured_image_thumbnail contains ' :// ' %}{{ post.featured_image_thumbnail }}{% else %}{{ post.featured_image_thumbnail | absolute_url }}{% endif %}"
             alt="{{ post.title }}">
     </a>
     {% elsif post.featured_image %}
-    <a class="post-thumbnail" href="{{ post.url }}">
+    <a class="post-thumbnail" href="{{ post.url| relative_url  }}">
         <img src="{% if post.featured_image contains ' :// ' %}{{ post.featured_image }}{% else %}{{ post.featured_image | absolute_url }}{% endif %}"
             alt="{{ post.title }}">
     </a>
