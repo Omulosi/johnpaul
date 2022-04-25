@@ -1,12 +1,12 @@
 ---
 layout: project
-title: React Shopper
+title: eShop
 subtitle: An e-commerce application
 tags: [react]
 featured_image_thumbnail:
 featured_image:
-github_link: /github
-demo_link: https://my-shopper-app.herokuapp.com/
+github: https://github.com/Omulosi/eShop
+demo: https://my-shopper-app.herokuapp.com/
 ---
 
 A Shopping Cart App built with React and Node.js. Includes Stripe
